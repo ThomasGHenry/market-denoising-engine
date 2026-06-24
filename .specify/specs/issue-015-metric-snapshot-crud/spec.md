@@ -1,5 +1,18 @@
 # MetricSnapshot CRUD — Spec
 
+## Resolved Ambiguities (Phase III — Clarify)
+
+1. **UI location**: Dedicated `/platform-posts/[id]` page. Cleaner than inline on the probe detail page and matches the navigation structure already established for platform posts.
+2. **capturedAt input**: Required `datetime-local` input. The user must set the point-in-time explicitly; no defaulting to now.
+3. **Validation pattern**: Check required fields, return an error string on failure, no Zod. Matches the pattern in `apps/web/src/app/platform-posts/actions.ts`.
+4. **Scope**: Full CRUD — create, read (list), update, delete.
+5. **After create**: Redirect to `/platform-posts/[id]`.
+6. **Update**: Edit form pre-populated with existing values via a hidden `id` field; on success, stay on `/platform-posts/[id]` (no redirect, just revalidate).
+7. **Delete**: A form with hidden `id` and `platformPostId`, single submit button; on success, revalidate and return `null`.
+
+---
+
+
 ## What the user can do
 
 From the platform post detail page, a user can:
