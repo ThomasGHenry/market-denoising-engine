@@ -58,6 +58,12 @@ deadline, or convenience argument.
 7. Preserve the full audit trail; do not delete or collapse historical records.
 8. The first successful learning loop matters more than polished UI.
 
+## Work Selection
+
+1. Work selection rubric: work-selection-rubric skill.
+2. Cooling period: **none** — the backlog is PRD-derived and systematically decomposed; impulse-filing protection is not needed.
+3. Issue sequence: rubric C3 (force multiplier) determines order; delegate one issue at a time to the SDD agent.
+
 ## Inherited Governance (tgh-template)
 
 1. All template governance ADRs apply unchanged.
