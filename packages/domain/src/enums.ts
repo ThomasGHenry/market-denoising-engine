@@ -1,6 +1,7 @@
 export enum GenerationStatus {
   DRAFT = 'DRAFT',
   ACTIVE = 'ACTIVE',
+  ARCHIVED = 'ARCHIVED',
   PUBLISHED = 'PUBLISHED',
   REVIEWED = 'REVIEWED',
   MUTATED = 'MUTATED',

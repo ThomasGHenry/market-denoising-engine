@@ -49,6 +49,7 @@ function makeProbe(gen: Generation): Probe {
     status: ProbeStatus.DRAFT,
     tags: [],
     effortMinutes: 10,
+    fitnessScore: null,
     createdAt: new Date(),
     updatedAt: new Date(),
     platformPosts: [],

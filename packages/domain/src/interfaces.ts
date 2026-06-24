@@ -38,6 +38,7 @@ export interface Probe {
   status: ProbeStatus
   tags: string[]
   effortMinutes: number
+  fitnessScore: number | null
   createdAt: Date
   updatedAt: Date
   platformPosts: PlatformPost[]
