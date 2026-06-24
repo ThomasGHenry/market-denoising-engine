@@ -28,3 +28,11 @@ export async function createGeneration(prevState: unknown, formData: FormData): 
 
   redirect('/generations')
 }
+
+export async function updateGenerationStatus(
+  id: string,
+  currentStatus: string,
+  newStatus: string,
+): Promise<string | null> {
+  return 'Invalid status transition'
+}
