@@ -1,6 +1,8 @@
 import { prisma } from '@template/db'
 import Link from 'next/link'
 
+export const dynamic = 'force-dynamic'
+
 async function loadGenerationsWithStats() {
   return prisma.generation.findMany({
     include: {

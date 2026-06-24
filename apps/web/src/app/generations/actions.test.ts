@@ -1,4 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
+import { prisma } from '@template/db'
+import { createGeneration, updateGenerationStatus } from './actions'
 
 vi.mock('@template/db', () => ({
   prisma: {
@@ -19,12 +21,11 @@ vi.mock('next/cache', () => ({
 }))
 
 beforeEach(function () {
-  vi.resetModules()
+  vi.clearAllMocks()
 })
 
 describe('createGeneration', function () {
   it('returns error when title is empty', async function () {
-    const { createGeneration } = await import('./actions')
     const formData = new FormData()
     formData.set('title', '')
     formData.set('theme', 'test theme')
@@ -36,8 +37,8 @@ describe('createGeneration', function () {
   })
 
   it('creates generation with DRAFT status on happy path', async function () {
-    const { prisma: mockPrisma } = await import('@template/db')
-    const mockCreate = vi.mocked((mockPrisma as any).generation.create)
+    type GenerationRecord = Awaited<ReturnType<typeof prisma.generation.create>>
+    const mockCreate = vi.mocked(prisma.generation.create)
     mockCreate.mockResolvedValueOnce({
       id: 'gen-1',
       title: 'Test Gen',
@@ -47,15 +48,14 @@ describe('createGeneration', function () {
       parentId: null,
       createdAt: new Date(),
       updatedAt: new Date(),
-    } as any)
+    } as GenerationRecord)
 
-    const { createGeneration } = await import('./actions')
     const formData = new FormData()
     formData.set('title', 'Test Gen')
     formData.set('theme', 'test theme')
     formData.set('fitnessFunction', 'default_v0')
 
-    const result = await createGeneration(null, formData)
+    await createGeneration(null, formData)
 
     expect(mockCreate).toHaveBeenCalledWith({
       data: {
@@ -71,19 +71,15 @@ describe('createGeneration', function () {
 
 describe('updateGenerationStatus', function () {
   it('rejects DRAFT to RETIRED transition', async function () {
-    const { updateGenerationStatus } = await import('./actions')
-
     const result = await updateGenerationStatus('gen-1', 'DRAFT', 'RETIRED')
 
     expect(result).toMatch(/invalid/i)
   })
 
   it('allows DRAFT to ACTIVE transition', async function () {
-    const { prisma: mockPrisma } = await import('@template/db')
-    const mockUpdate = vi.mocked((mockPrisma as any).generation.update)
-    mockUpdate.mockResolvedValueOnce({ id: 'gen-1' } as any)
-
-    const { updateGenerationStatus } = await import('./actions')
+    type GenerationRecord = Awaited<ReturnType<typeof prisma.generation.update>>
+    const mockUpdate = vi.mocked(prisma.generation.update)
+    mockUpdate.mockResolvedValueOnce({ id: 'gen-1' } as GenerationRecord)
 
     const result = await updateGenerationStatus('gen-1', 'DRAFT', 'ACTIVE')
 

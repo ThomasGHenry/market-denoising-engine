@@ -1,6 +1,8 @@
 import { prisma } from '@template/db'
 import GenerationForm from './GenerationForm'
 
+export const dynamic = 'force-dynamic'
+
 async function loadEligibleParents() {
   return prisma.generation.findMany({
     where: {

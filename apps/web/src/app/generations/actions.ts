@@ -1,6 +1,7 @@
 'use server'
 
 import { prisma } from '@template/db'
+import type { GenerationStatus } from '@prisma/client'
 import { redirect } from 'next/navigation'
 import { revalidatePath } from 'next/cache'
 
@@ -50,7 +51,7 @@ export async function updateGenerationStatus(
 
   await prisma.generation.update({
     where: { id },
-    data: { status: newStatus as any },
+    data: { status: newStatus as GenerationStatus },
   })
 
   revalidatePath('/generations')
