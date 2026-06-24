@@ -48,3 +48,44 @@ Signal reviews carry three mandatory, separate fields: observation, interpretati
 - Status enumerations cover all valid values for all lifecycle-bearing entities
 - Status transition rules are enforced at runtime: a call to a transition guard returns a boolean answer to whether a given status change is permitted
 - The auditability guarantee is structurally enforced: observation, interpretation, and decision exist as three separate, named fields on signal reviews
+
+## Clarifications
+
+### Enum Style
+
+All status and categorical values are expressed as plain TypeScript `enum` (not `const enum`, not string union types). Each enum member's string value equals its identifier name exactly.
+
+### Nullable vs Optional Fields
+
+Fields that may have no value use `| null` (not `| undefined`). Optional relation references use the `?` suffix on the property name with a non-nullable type.
+
+### Interface Naming
+
+Interface names match Prisma model names exactly: `Generation`, `Probe`, `PlatformPost`, `MetricSnapshot`, `SignalReview`, `GenerationReview`, `Mutation`.
+
+### DateTime Fields
+
+All timestamp and date fields use the TypeScript `Date` type.
+
+### Array Fields
+
+All array fields use TypeScript array syntax: `string[]`, `Probe[]`, `PlatformPost[]`, etc.
+
+### Relation Fields
+
+Relation references (non-scalar fields pointing to other entities) are included as optional properties with the `?` suffix. Foreign key scalar fields (`generationId`, `probeId`, etc.) are required strings.
+
+### Numeric Fields from Prisma Int
+
+Prisma `Int` and `Int?` fields map to TypeScript `number` and `number | null` respectively.
+
+### Probe effortMinutes
+
+The Prisma schema shows `effortMinutes Int @default(10)`. In the domain interface this is `effortMinutes: number | null` to allow probes where effort has not been estimated.
+
+### Transition Guards
+
+`isValidGenerationTransition(from: GenerationStatus, to: GenerationStatus): boolean`
+`isValidProbeTransition(from: ProbeStatus, to: ProbeStatus): boolean`
+
+Both functions use a `Set<string>` of `"FROM:TO"` encoded pairs for O(1) lookup. RETIRED is a valid destination from every status including RETIRED itself.
