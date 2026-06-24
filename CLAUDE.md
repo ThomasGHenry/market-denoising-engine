@@ -44,14 +44,14 @@ Three-layer system:
 
 ```
 apps/web          → @template/ui, @template/db, @template/config, @template/domain, @template/scoring
-packages/scoring  → @template/domain (types only)
+packages/scoring  → nothing (pure TS)
 packages/domain   → nothing (pure TS)
 packages/db       → @prisma/client
 packages/ui       → react (peer)
 packages/config   → zod
 ```
 
-**Critical boundary rule**: `packages/domain` and `packages/scoring` must never import from `@prisma/client`, React, or `@template/ui`. Domain is pure TypeScript. (ADR 0017 — NX boundary tags not yet applied; enforce manually until fixed.)
+**Critical boundary rule**: `packages/domain` and `packages/scoring` must never import from `@prisma/client`, React, or `@template/ui`. Domain is pure TypeScript. (ADR 0017 — enforced via NX boundary tags and eslint no-restricted-imports.)
 
 ### CI pipeline
 
