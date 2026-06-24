@@ -234,6 +234,18 @@ describe('isValidGenerationTransition', function () {
   test('RETIRED to ACTIVE is invalid', function () {
     expect(isValidGenerationTransition(GenerationStatus.RETIRED, GenerationStatus.ACTIVE)).toBe(false)
   })
+
+  test('DRAFT to PUBLISHED forward-skip is invalid', function () {
+    expect(isValidGenerationTransition(GenerationStatus.DRAFT, GenerationStatus.PUBLISHED)).toBe(false)
+  })
+
+  test('PUBLISHED to DRAFT backward is invalid', function () {
+    expect(isValidGenerationTransition(GenerationStatus.PUBLISHED, GenerationStatus.DRAFT)).toBe(false)
+  })
+
+  test('MUTATED to ACTIVE is invalid', function () {
+    expect(isValidGenerationTransition(GenerationStatus.MUTATED, GenerationStatus.ACTIVE)).toBe(false)
+  })
 })
 
 describe('isValidProbeTransition', function () {
@@ -283,5 +295,17 @@ describe('isValidProbeTransition', function () {
 
   test('RETIRED to READY is invalid', function () {
     expect(isValidProbeTransition(ProbeStatus.RETIRED, ProbeStatus.READY)).toBe(false)
+  })
+
+  test('DRAFT to PUBLISHED forward-skip is invalid', function () {
+    expect(isValidProbeTransition(ProbeStatus.DRAFT, ProbeStatus.PUBLISHED)).toBe(false)
+  })
+
+  test('PUBLISHED to DRAFT backward is invalid', function () {
+    expect(isValidProbeTransition(ProbeStatus.PUBLISHED, ProbeStatus.DRAFT)).toBe(false)
+  })
+
+  test('MUTATED to READY is invalid', function () {
+    expect(isValidProbeTransition(ProbeStatus.MUTATED, ProbeStatus.READY)).toBe(false)
   })
 })

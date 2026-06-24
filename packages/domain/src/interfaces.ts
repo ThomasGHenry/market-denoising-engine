@@ -16,7 +16,7 @@ export interface Generation {
   status: GenerationStatus
   fitnessFunction: string
   parentId: string | null
-  parent?: Generation
+  parent?: Generation | null
   children: Generation[]
   probes: Probe[]
   reviews: GenerationReview[]
@@ -29,7 +29,7 @@ export interface Probe {
   generationId: string
   generation: Generation
   parentProbeId: string | null
-  parentProbe?: Probe
+  parentProbe?: Probe | null
   childProbes: Probe[]
   title: string
   rawInput: string
