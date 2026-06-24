@@ -17,7 +17,7 @@ import {
   ProbeStatus,
   SignalReview,
   SignalStrength,
-} from '@template/domain'
+} from './index'
 
 function makeGeneration(): Generation {
   return {
