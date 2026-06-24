@@ -70,10 +70,24 @@ describe('createGeneration', function () {
 })
 
 describe('updateGenerationStatus', function () {
-  it('rejects DRAFT to RETIRED transition', async function () {
-    const result = await updateGenerationStatus('gen-1', 'DRAFT', 'RETIRED')
+  it('rejects PUBLISHED to DRAFT transition', async function () {
+    const result = await updateGenerationStatus('gen-1', 'PUBLISHED', 'DRAFT')
 
     expect(result).toMatch(/invalid/i)
+  })
+
+  it('allows DRAFT to RETIRED transition', async function () {
+    type GenerationRecord = Awaited<ReturnType<typeof prisma.generation.update>>
+    const mockUpdate = vi.mocked(prisma.generation.update)
+    mockUpdate.mockResolvedValueOnce({ id: 'gen-1' } as GenerationRecord)
+
+    const result = await updateGenerationStatus('gen-1', 'DRAFT', 'RETIRED')
+
+    expect(result).toBeNull()
+    expect(mockUpdate).toHaveBeenCalledWith({
+      where: { id: 'gen-1' },
+      data: { status: 'RETIRED' },
+    })
   })
 
   it('allows DRAFT to ACTIVE transition', async function () {

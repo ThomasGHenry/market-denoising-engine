@@ -6,6 +6,7 @@ import { updateProbeStatus } from '../actions'
 interface ProbeStatusControlsProps {
   id: string
   status: string
+  generationId: string
 }
 
 type StatusButton = { label: string; nextStatus: string }
@@ -34,7 +35,7 @@ function buttonsForStatus(status: string): StatusButton[] {
   return map[status] ?? []
 }
 
-export default function ProbeStatusControls({ id, status }: ProbeStatusControlsProps) {
+export default function ProbeStatusControls({ id, status, generationId }: ProbeStatusControlsProps) {
   const [isPending, startTransition] = useTransition()
   const buttons = buttonsForStatus(status)
 
@@ -44,7 +45,7 @@ export default function ProbeStatusControls({ id, status }: ProbeStatusControlsP
 
   function handleClick(nextStatus: string) {
     startTransition(async function () {
-      await updateProbeStatus(id, status, nextStatus)
+      await updateProbeStatus(id, status, nextStatus, generationId)
     })
   }
 

@@ -111,7 +111,7 @@ describe('createProbe', function () {
 
 describe('updateProbeStatus', function () {
   it('rejects invalid transition (PUBLISHED to DRAFT)', async function () {
-    const result = await updateProbeStatus('probe-1', 'PUBLISHED', 'DRAFT')
+    const result = await updateProbeStatus('probe-1', 'PUBLISHED', 'DRAFT', 'gen-1')
 
     expect(result).toMatch(/invalid/i)
   })
@@ -121,12 +121,16 @@ describe('updateProbeStatus', function () {
     const mockUpdate = vi.mocked(prisma.probe.update)
     mockUpdate.mockResolvedValueOnce({ id: 'probe-1' } as ProbeRecord)
 
-    const result = await updateProbeStatus('probe-1', 'DRAFT', 'READY')
+    const { revalidatePath } = await import('next/cache')
+    const mockRevalidate = vi.mocked(revalidatePath)
+
+    const result = await updateProbeStatus('probe-1', 'DRAFT', 'READY', 'gen-1')
 
     expect(result).toBeNull()
     expect(mockUpdate).toHaveBeenCalledWith({
       where: { id: 'probe-1' },
       data: { status: 'READY' },
     })
+    expect(mockRevalidate).toHaveBeenCalledWith('/generations/gen-1')
   })
 })

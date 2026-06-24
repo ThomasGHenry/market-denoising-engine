@@ -51,7 +51,7 @@ export async function createProbe(prevState: unknown, formData: FormData): Promi
   redirect('/generations/' + generationId)
 }
 
-export async function updateProbeStatus(id: string, currentStatus: string, newStatus: string): Promise<string | null> {
+export async function updateProbeStatus(id: string, currentStatus: string, newStatus: string, generationId: string): Promise<string | null> {
   if (!isValidProbeTransition(currentStatus as ProbeStatus, newStatus as ProbeStatus)) {
     return 'Invalid status transition'
   }
@@ -62,5 +62,6 @@ export async function updateProbeStatus(id: string, currentStatus: string, newSt
   })
 
   revalidatePath('/probes/' + id)
+  revalidatePath('/generations/' + generationId)
   return null
 }

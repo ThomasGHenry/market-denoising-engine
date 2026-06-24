@@ -72,7 +72,7 @@ export default async function ProbeDetailPage({ params }: PageProps) {
         </section>
       )}
 
-      <ProbeStatusControls id={probe.id} status={probe.status} />
+      <ProbeStatusControls id={probe.id} status={probe.status} generationId={probe.generation.id} />
     </main>
   )
 }

@@ -1,18 +1,10 @@
 'use server'
 
 import { prisma } from '@template/db'
-import type { GenerationStatus } from '@prisma/client'
+import { isValidGenerationTransition } from '@template/domain'
+import type { GenerationStatus } from '@template/domain'
 import { redirect } from 'next/navigation'
 import { revalidatePath } from 'next/cache'
-
-const VALID_TRANSITIONS: Record<string, string[]> = {
-  DRAFT: ['ACTIVE'],
-  ACTIVE: ['ARCHIVED', 'RETIRED'],
-}
-
-function isValidTransition(from: string, to: string): boolean {
-  return (VALID_TRANSITIONS[from] ?? []).includes(to)
-}
 
 export async function createGeneration(prevState: unknown, formData: FormData): Promise<string | null> {
   const title = formData.get('title') as string
@@ -45,7 +37,7 @@ export async function updateGenerationStatus(
   currentStatus: string,
   newStatus: string,
 ): Promise<string | null> {
-  if (!isValidTransition(currentStatus, newStatus)) {
+  if (!isValidGenerationTransition(currentStatus as GenerationStatus, newStatus as GenerationStatus)) {
     return 'Invalid status transition'
   }
 
