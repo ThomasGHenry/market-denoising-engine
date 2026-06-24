@@ -8,8 +8,40 @@ body:
   - type: textarea
     id: symptom
     attributes:
-      label: Symptom
-      description: What went wrong? No reproduction required at this stage.
+      label: Observed Symptom
+      description: What went wrong? No reproduction steps required at this stage.
+      placeholder: "e.g. Fitness score shows 0 even after entering metric snapshots"
+    validations:
+      required: true
+
+  - type: textarea
+    id: when_started
+    attributes:
+      label: When Did This Start?
+      description: First noticed, after a deploy, after a specific action, etc.
+    validations:
+      required: false
+
+  - type: dropdown
+    id: frequency
+    attributes:
+      label: How Often Does This Happen?
+      options:
+        - Every time
+        - Most of the time (>50%)
+        - Sometimes (<50%)
+        - Once or twice
+        - Unknown
+      default: 4
+    validations:
+      required: true
+
+  - type: textarea
+    id: impact
+    attributes:
+      label: Impact
+      description: Which part of the learning loop does this block?
+      placeholder: "e.g. Can't see generation ranking, so can't select parent for next generation"
     validations:
       required: true
 
@@ -17,6 +49,6 @@ body:
     id: environment
     attributes:
       label: Environment
-      description: Where did it happen? (OS, browser, version, deployment, etc.)
+      description: Browser, OS, deployment (local / Vercel preview / production), any relevant context.
     validations:
       required: false

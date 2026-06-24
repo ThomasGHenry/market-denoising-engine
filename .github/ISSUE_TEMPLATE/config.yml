@@ -1,1 +1,8 @@
 blank_issues_enabled: false
+contact_links:
+  - name: Product Requirements Document
+    url: https://github.com/ThomasGHenry/mde/blob/main/docs/prd/mde-prd.md
+    about: Full MDE PRD — purpose, domain model, acceptance criteria, roadmap
+  - name: Project Constitution
+    url: https://github.com/ThomasGHenry/mde/blob/main/.specify/memory/constitution.md
+    about: Process non-negotiables, philosophy, and inherited governance

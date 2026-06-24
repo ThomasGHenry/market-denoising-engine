@@ -86,3 +86,24 @@ PrismaClient is a singleton via `globalThis` in `packages/db/src/index.ts` to su
 ## Spec-first workflow
 
 Before any non-trivial implementation: update `docs/prd/mde-prd.md` or a feature spec, write or update an ADR if the change is architectural, then implement. See `docs/adr/README.md` for when an ADR is required vs a `DECISIONS.md` entry.
+
+## Peer projects (reference)
+
+Cross-project audit (2026-06-24) compared 8 sibling projects in `~/code/`. MDE inherits the best patterns:
+
+| Pattern | Source | MDE status |
+|---|---|---|
+| Phase 0 CI gate (governance before compute) | buen-vecino | ✅ ADR 0005 |
+| Aggregate validator (single required status check) | buen-vecino | ✅ ADR 0002 |
+| Three-layer validation (pre-commit / pre-push / CI) | buen-vecino | ✅ ADR 0023 |
+| Spec-first + constitution | buen-vecino, diane-v01 | ✅ `.specify/memory/constitution.md` |
+| Two-template bug workflow (triage → triaged) | passive-symptom-tracker | ✅ issue templates |
+| ADR frontmatter enforcement in CI | passive-symptom-tracker | ✅ Phase 0 |
+| GitHub-native DORA instrumentation | burnout-beacon | ✅ ADR 0007 (template) |
+| Tooling issue linked to governing ADR | buen-vecino | ✅ tooling.yml |
+| Coverage ratcheting | diane-v01 | deferred |
+| Stryker mutation testing | burnout-beacon, diane-v01 | deferred |
+
+For CI/CD patterns: `~/code/buen-vecino/.github/workflows/`
+For testing depth: `~/code/diane-v01/` (82 specs, coverage ratchet, Stryker)
+For DORA instrumentation: `~/code/burnout-beacon/` (GitHub-native, zero SaaS)
