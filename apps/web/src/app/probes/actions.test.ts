@@ -104,8 +104,8 @@ describe('createProbe', function () {
     await createProbe(null, formData)
 
     expect(mockCreate).toHaveBeenCalledOnce()
-    const [callArg] = mockCreate.mock.calls[0] as Parameters<typeof prisma.probe.create>[]
-    expect((callArg as Parameters<typeof prisma.probe.create>[0]).data.tags).toEqual(['marketing', 'growth', 'social'])
+    const callArgs = mockCreate.mock.calls[0] as Parameters<typeof prisma.probe.create>
+    expect(callArgs[0].data.tags).toEqual(['marketing', 'growth', 'social'])
   })
 })
 
