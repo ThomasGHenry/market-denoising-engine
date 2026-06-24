@@ -1,4 +1,4 @@
-import { describe, it, expect, vi } from 'vitest'
+import { describe, it, expect, vi, beforeEach } from 'vitest'
 
 vi.mock('@template/db', () => ({
   prisma: {
@@ -9,6 +9,18 @@ vi.mock('@template/db', () => ({
     },
   },
 }))
+
+vi.mock('next/navigation', () => ({
+  redirect: vi.fn(),
+}))
+
+vi.mock('next/cache', () => ({
+  revalidatePath: vi.fn(),
+}))
+
+beforeEach(function () {
+  vi.resetModules()
+})
 
 describe('createGeneration', function () {
   it('returns error when title is empty', async function () {
@@ -21,5 +33,38 @@ describe('createGeneration', function () {
     const result = await createGeneration(null, formData)
 
     expect(result).toBe('Title is required')
+  })
+
+  it('creates generation with DRAFT status on happy path', async function () {
+    const { prisma: mockPrisma } = await import('@template/db')
+    const mockCreate = vi.mocked((mockPrisma as any).generation.create)
+    mockCreate.mockResolvedValueOnce({
+      id: 'gen-1',
+      title: 'Test Gen',
+      theme: 'test',
+      status: 'DRAFT',
+      fitnessFunction: 'default_v0',
+      parentId: null,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    } as any)
+
+    const { createGeneration } = await import('./actions')
+    const formData = new FormData()
+    formData.set('title', 'Test Gen')
+    formData.set('theme', 'test theme')
+    formData.set('fitnessFunction', 'default_v0')
+
+    const result = await createGeneration(null, formData)
+
+    expect(mockCreate).toHaveBeenCalledWith({
+      data: {
+        title: 'Test Gen',
+        theme: 'test theme',
+        fitnessFunction: 'default_v0',
+        status: 'DRAFT',
+        parentId: null,
+      },
+    })
   })
 })
