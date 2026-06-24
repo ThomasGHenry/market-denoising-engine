@@ -5,6 +5,8 @@ import {
   Generation,
   GenerationReview,
   GenerationStatus,
+  isValidGenerationTransition,
+  isValidProbeTransition,
   MetricSnapshot,
   Mutation,
   MutationStatus,
@@ -181,5 +183,105 @@ describe('Mutation interface', function () {
       updatedAt: new Date(),
     }
     expect(mutation.mutationType).toBe(MutationType.HOOK)
+  })
+})
+
+describe('isValidGenerationTransition', function () {
+  test('DRAFT to ACTIVE is valid', function () {
+    expect(isValidGenerationTransition(GenerationStatus.DRAFT, GenerationStatus.ACTIVE)).toBe(true)
+  })
+
+  test('ACTIVE to DRAFT is invalid', function () {
+    expect(isValidGenerationTransition(GenerationStatus.ACTIVE, GenerationStatus.DRAFT)).toBe(false)
+  })
+
+  test('ACTIVE to PUBLISHED is valid', function () {
+    expect(isValidGenerationTransition(GenerationStatus.ACTIVE, GenerationStatus.PUBLISHED)).toBe(true)
+  })
+
+  test('PUBLISHED to REVIEWED is valid', function () {
+    expect(isValidGenerationTransition(GenerationStatus.PUBLISHED, GenerationStatus.REVIEWED)).toBe(true)
+  })
+
+  test('REVIEWED to MUTATED is valid', function () {
+    expect(isValidGenerationTransition(GenerationStatus.REVIEWED, GenerationStatus.MUTATED)).toBe(true)
+  })
+
+  test('DRAFT to RETIRED is valid', function () {
+    expect(isValidGenerationTransition(GenerationStatus.DRAFT, GenerationStatus.RETIRED)).toBe(true)
+  })
+
+  test('ACTIVE to RETIRED is valid', function () {
+    expect(isValidGenerationTransition(GenerationStatus.ACTIVE, GenerationStatus.RETIRED)).toBe(true)
+  })
+
+  test('PUBLISHED to RETIRED is valid', function () {
+    expect(isValidGenerationTransition(GenerationStatus.PUBLISHED, GenerationStatus.RETIRED)).toBe(true)
+  })
+
+  test('REVIEWED to RETIRED is valid', function () {
+    expect(isValidGenerationTransition(GenerationStatus.REVIEWED, GenerationStatus.RETIRED)).toBe(true)
+  })
+
+  test('MUTATED to RETIRED is valid', function () {
+    expect(isValidGenerationTransition(GenerationStatus.MUTATED, GenerationStatus.RETIRED)).toBe(true)
+  })
+
+  test('RETIRED to RETIRED is valid', function () {
+    expect(isValidGenerationTransition(GenerationStatus.RETIRED, GenerationStatus.RETIRED)).toBe(true)
+  })
+
+  test('RETIRED to ACTIVE is invalid', function () {
+    expect(isValidGenerationTransition(GenerationStatus.RETIRED, GenerationStatus.ACTIVE)).toBe(false)
+  })
+})
+
+describe('isValidProbeTransition', function () {
+  test('DRAFT to READY is valid', function () {
+    expect(isValidProbeTransition(ProbeStatus.DRAFT, ProbeStatus.READY)).toBe(true)
+  })
+
+  test('READY to PUBLISHED is valid', function () {
+    expect(isValidProbeTransition(ProbeStatus.READY, ProbeStatus.PUBLISHED)).toBe(true)
+  })
+
+  test('PUBLISHED to REVIEWED is valid', function () {
+    expect(isValidProbeTransition(ProbeStatus.PUBLISHED, ProbeStatus.REVIEWED)).toBe(true)
+  })
+
+  test('REVIEWED to MUTATED is valid', function () {
+    expect(isValidProbeTransition(ProbeStatus.REVIEWED, ProbeStatus.MUTATED)).toBe(true)
+  })
+
+  test('DRAFT to RETIRED is valid', function () {
+    expect(isValidProbeTransition(ProbeStatus.DRAFT, ProbeStatus.RETIRED)).toBe(true)
+  })
+
+  test('READY to RETIRED is valid', function () {
+    expect(isValidProbeTransition(ProbeStatus.READY, ProbeStatus.RETIRED)).toBe(true)
+  })
+
+  test('PUBLISHED to RETIRED is valid', function () {
+    expect(isValidProbeTransition(ProbeStatus.PUBLISHED, ProbeStatus.RETIRED)).toBe(true)
+  })
+
+  test('REVIEWED to RETIRED is valid', function () {
+    expect(isValidProbeTransition(ProbeStatus.REVIEWED, ProbeStatus.RETIRED)).toBe(true)
+  })
+
+  test('MUTATED to RETIRED is valid', function () {
+    expect(isValidProbeTransition(ProbeStatus.MUTATED, ProbeStatus.RETIRED)).toBe(true)
+  })
+
+  test('RETIRED to RETIRED is valid', function () {
+    expect(isValidProbeTransition(ProbeStatus.RETIRED, ProbeStatus.RETIRED)).toBe(true)
+  })
+
+  test('READY to DRAFT is invalid', function () {
+    expect(isValidProbeTransition(ProbeStatus.READY, ProbeStatus.DRAFT)).toBe(false)
+  })
+
+  test('RETIRED to READY is invalid', function () {
+    expect(isValidProbeTransition(ProbeStatus.RETIRED, ProbeStatus.READY)).toBe(false)
   })
 })
