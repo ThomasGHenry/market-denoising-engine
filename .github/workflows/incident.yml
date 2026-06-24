@@ -1,0 +1,43 @@
+name: Incident Tracking
+
+on:
+  issues:
+    types: [labeled, closed]
+
+permissions:
+  contents: read
+  deployments: write
+
+jobs:
+  record-incident-start:
+    if: github.event.action == 'labeled' && github.event.label.name == 'incident'
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Record incident start
+        uses: bobheadxi/deployments@v1
+        with:
+          step: start
+          token: ${{ secrets.GITHUB_TOKEN }}
+          env: incident
+          ref: ${{ github.sha }}
+
+  record-incident-resolution:
+    if: github.event.action == 'closed' && contains(github.event.issue.labels.*.name, 'incident')
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Compute MTTR
+        run: |
+          OPENED="${{ github.event.issue.created_at }}"
+          CLOSED="${{ github.event.issue.closed_at }}"
+          START=$(date -d "$OPENED" +%s 2>/dev/null || date -j -f "%Y-%m-%dT%H:%M:%SZ" "$OPENED" +%s)
+          END=$(date -d "$CLOSED" +%s 2>/dev/null || date -j -f "%Y-%m-%dT%H:%M:%SZ" "$CLOSED" +%s)
+          MTTR_SECONDS=$((END - START))
+          MTTR_MINUTES=$((MTTR_SECONDS / 60))
+          echo "MTTR: ${MTTR_MINUTES} minutes (${MTTR_SECONDS} seconds)"
+      - name: Record incident resolution
+        uses: bobheadxi/deployments@v1
+        with:
+          step: finish
+          token: ${{ secrets.GITHUB_TOKEN }}
+          env: incident
+          status: success

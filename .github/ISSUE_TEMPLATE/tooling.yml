@@ -1,0 +1,23 @@
+name: Tooling
+description: CI, infrastructure, or governance change
+title: "[Tooling]: "
+labels:
+  - tooling
+  - needs-adr
+body:
+  - type: textarea
+    id: description
+    attributes:
+      label: Description
+      description: What CI/infra/governance change is needed?
+    validations:
+      required: true
+
+  - type: input
+    id: adr_number
+    attributes:
+      label: ADR Number
+      description: Which ADR number governs or will govern this change?
+      placeholder: e.g. 0007
+    validations:
+      required: true

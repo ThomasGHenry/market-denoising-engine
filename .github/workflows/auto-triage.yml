@@ -1,0 +1,36 @@
+name: Auto Triage
+
+on:
+  workflow_call:
+    inputs:
+      workflow_name:
+        required: true
+        type: string
+      run_url:
+        required: true
+        type: string
+      commit_sha:
+        required: true
+        type: string
+      actor:
+        required: true
+        type: string
+
+permissions:
+  contents: read
+  issues: write
+
+jobs:
+  triage:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - name: Create or update failure issue
+        run: bash .github/scripts/auto-triage/create-issue.sh
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          WORKFLOW_NAME: ${{ inputs.workflow_name }}
+          RUN_URL: ${{ inputs.run_url }}
+          COMMIT_SHA: ${{ inputs.commit_sha }}
+          ACTOR: ${{ inputs.actor }}
+          GITHUB_REPOSITORY: ${{ github.repository }}

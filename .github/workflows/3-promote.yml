@@ -1,0 +1,58 @@
+name: Promote to Production
+
+on:
+  workflow_run:
+    workflows: ["E2E"]
+    types: [completed]
+    branches: [main]
+  workflow_dispatch:
+    inputs:
+      confirm:
+        description: 'Type "promote" to confirm production promotion'
+        required: true
+        type: string
+
+permissions:
+  contents: read
+  deployments: write
+
+jobs:
+  validate-input:
+    if: github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Validate confirmation
+        if: inputs.confirm != 'promote'
+        run: |
+          echo "Confirmation required. Type 'promote' to proceed."
+          exit 1
+
+  migrate:
+    needs: [validate-input]
+    if: |
+      always() &&
+      (needs.validate-input.result == 'success' || needs.validate-input.result == 'skipped') &&
+      (
+        (github.event_name == 'workflow_run' && github.event.workflow_run.conclusion == 'success') ||
+        (github.event_name == 'workflow_dispatch' && inputs.confirm == 'promote')
+      )
+    runs-on: ubuntu-24.04
+    environment: production
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: '22', cache: 'npm' }
+      - run: npm ci --ignore-scripts
+      - name: Run production migration
+        run: npx prisma migrate deploy --config packages/db/prisma.config.ts
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL_PROD }}
+      - name: Promote Vercel preview to production
+        run: npx vercel promote ${{ secrets.VERCEL_PREVIEW_URL }} --token ${{ secrets.VERCEL_TOKEN }}
+      - name: Record production deployment
+        uses: bobheadxi/deployments@v1
+        with:
+          step: finish
+          token: ${{ secrets.GITHUB_TOKEN }}
+          env: production
+          status: ${{ job.status }}

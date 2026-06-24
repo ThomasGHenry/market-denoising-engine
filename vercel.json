@@ -1,0 +1,5 @@
+{
+  "framework": "nextjs",
+  "buildCommand": "npx nx run web:build",
+  "outputDirectory": "apps/web/.next"
+}

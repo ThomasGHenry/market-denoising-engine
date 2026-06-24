@@ -1,0 +1,50 @@
+name: Bug (triaged)
+description: Reproduced bug with known reproduction steps
+title: "[Bug]: "
+labels:
+  - bug
+  - needs-spec
+body:
+  - type: textarea
+    id: reproduction_steps
+    attributes:
+      label: Reproduction Steps
+      description: Minimal steps to reproduce the bug
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected_behavior
+    attributes:
+      label: Expected Behavior
+      description: What should have happened?
+    validations:
+      required: true
+
+  - type: textarea
+    id: actual_behavior
+    attributes:
+      label: Actual Behavior
+      description: What actually happened?
+    validations:
+      required: true
+
+  - type: dropdown
+    id: severity
+    attributes:
+      label: Severity
+      options:
+        - "P0 — System down"
+        - "P1 — Major"
+        - "P2 — Minor"
+        - "P3 — Cosmetic"
+    validations:
+      required: true
+
+  - type: textarea
+    id: logs
+    attributes:
+      label: Logs
+      description: Relevant logs, stack traces, or error messages (optional)
+    validations:
+      required: false

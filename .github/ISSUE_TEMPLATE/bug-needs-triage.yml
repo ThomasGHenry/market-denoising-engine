@@ -1,0 +1,22 @@
+name: Bug (needs triage)
+description: Something is wrong — no reproduction required
+title: "[Bug]: "
+labels:
+  - bug
+  - needs-triage
+body:
+  - type: textarea
+    id: symptom
+    attributes:
+      label: Symptom
+      description: What went wrong? No reproduction required at this stage.
+    validations:
+      required: true
+
+  - type: textarea
+    id: environment
+    attributes:
+      label: Environment
+      description: Where did it happen? (OS, browser, version, deployment, etc.)
+    validations:
+      required: false

@@ -1,0 +1,53 @@
+{
+  "$schema": "./node_modules/nx/schemas/nx-schema.json",
+  "defaultBase": "main",
+  "namedInputs": {
+    "default": ["{projectRoot}/**/*", "sharedGlobals"],
+    "sharedGlobals": ["{workspaceRoot}/tsconfig.base.json"],
+    "production": [
+      "default",
+      "!{projectRoot}/**/*.{spec,test}.{ts,tsx}",
+      "!{projectRoot}/vitest.config.ts"
+    ]
+  },
+  "plugins": [
+    {
+      "plugin": "@nx/next",
+      "options": { "buildTargetName": "build", "devTargetName": "dev", "startTargetName": "start" }
+    },
+    {
+      "plugin": "@nx/vite",
+      "options": { "testTargetName": "test" }
+    },
+    {
+      "plugin": "@nx/eslint",
+      "options": {
+        "lintTargetName": "lint",
+        "targetName": "lint"
+      }
+    },
+    {
+      "plugin": "@nx/playwright",
+      "options": { "targetName": "e2e" }
+    }
+  ],
+  "targetDefaults": {
+    "build": {
+      "dependsOn": ["^build"],
+      "inputs": ["production", "^production"],
+      "cache": true
+    },
+    "test": {
+      "inputs": ["default", "^production"],
+      "cache": true
+    },
+    "lint": {
+      "inputs": ["default", "{workspaceRoot}/eslint.config.mjs"],
+      "cache": true
+    },
+    "typecheck": {
+      "inputs": ["default", "^production"],
+      "cache": true
+    }
+  }
+}

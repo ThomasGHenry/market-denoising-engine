@@ -1,0 +1,10 @@
+{
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "jsx": "react-jsx",
+    "lib": ["ES2022", "DOM", "DOM.Iterable"],
+    "outDir": "./dist",
+    "plugins": [{ "name": "next" }]
+  },
+  "include": ["src/**/*", "next.config.ts", "next-env.d.ts", "vitest.config.ts"]
+}

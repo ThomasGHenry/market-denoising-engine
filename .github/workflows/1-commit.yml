@@ -1,0 +1,159 @@
+name: Commit Validation
+
+on:
+  push:
+    branches: ['**']
+  pull_request:
+
+permissions:
+  contents: read
+  issues: write
+  pull-requests: read
+
+jobs:
+
+  # ─── PHASE 0: GOVERNANCE ──────────────────────────────────────────────────
+
+  gitleaks:
+    name: Secret Scan
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+        with: { fetch-depth: 0 }
+      - uses: gitleaks/gitleaks-action@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  actionlint:
+    name: Workflow Lint
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: raven-actions/actionlint@v2
+
+  validate-adrs:
+    name: ADR Structure
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - run: bash scripts/ci/validate-adrs.sh docs/adr
+
+  validate-commits:
+    name: Commit Messages
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+        with: { fetch-depth: 0 }
+      - run: bash scripts/ci/validate-commits.sh
+        env:
+          GITHUB_EVENT_NAME: ${{ github.event_name }}
+          GITHUB_BASE_REF: ${{ github.base_ref }}
+          GITHUB_SHA: ${{ github.sha }}
+          GITHUB_EVENT_BEFORE: ${{ github.event.before }}
+
+  shellcheck:
+    name: Shell Lint
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - run: bash scripts/ci/run-shellcheck.sh
+
+  prisma-migrate-check:
+    name: Prisma Schema Validity
+    runs-on: ubuntu-24.04
+    services:
+      postgres:
+        image: postgres:17-alpine
+        env:
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: test_db
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 5432:5432
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: '22', cache: 'npm' }
+      - run: npm ci --ignore-scripts
+      - run: npx prisma generate --config packages/db/prisma.config.ts
+        env:
+          DATABASE_URL: postgresql://postgres:postgres@localhost:5432/test_db
+      - run: npx prisma migrate deploy --config packages/db/prisma.config.ts
+        env:
+          DATABASE_URL: postgresql://postgres:postgres@localhost:5432/test_db
+
+  # ─── PHASE 1: QUALITY ─────────────────────────────────────────────────────
+
+  typecheck:
+    name: Type Check
+    needs: [gitleaks, actionlint, validate-adrs, validate-commits, shellcheck, prisma-migrate-check]
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: '22', cache: 'npm' }
+      - run: npm ci --ignore-scripts
+      - run: npx prisma generate --config packages/db/prisma.config.ts
+        env:
+          DATABASE_URL: postgresql://localhost/dummy
+      - run: npx nx run-many -t typecheck
+
+  lint:
+    name: Lint
+    needs: [gitleaks, actionlint, validate-adrs, validate-commits, shellcheck, prisma-migrate-check]
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: '22', cache: 'npm' }
+      - run: npm ci --ignore-scripts
+      - run: npx prisma generate --config packages/db/prisma.config.ts
+        env:
+          DATABASE_URL: postgresql://localhost/dummy
+      - run: npx nx run-many -t lint
+
+  test:
+    name: Test
+    needs: [gitleaks, actionlint, validate-adrs, validate-commits, shellcheck, prisma-migrate-check]
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: '22', cache: 'npm' }
+      - run: npm ci --ignore-scripts
+      - run: npx prisma generate --config packages/db/prisma.config.ts
+        env:
+          DATABASE_URL: postgresql://localhost/dummy
+      - run: npx nx run-many -t test
+
+  build:
+    name: Build
+    needs: [gitleaks, actionlint, validate-adrs, validate-commits, shellcheck, prisma-migrate-check]
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: '22', cache: 'npm' }
+      - run: npm ci --ignore-scripts
+      - run: npx prisma generate --config packages/db/prisma.config.ts
+        env:
+          DATABASE_URL: postgresql://localhost/dummy
+      - run: npx nx run-many -t build
+
+  # ─── AGGREGATE (sole required GitHub status check) ────────────────────────
+
+  commit-validation:
+    name: Commit Validation
+    needs: [gitleaks, actionlint, validate-adrs, validate-commits, shellcheck, prisma-migrate-check, typecheck, lint, test, build]
+    runs-on: ubuntu-24.04
+    if: always()
+    steps:
+      - uses: actions/checkout@v4
+      - name: Validate all jobs succeeded
+        run: bash scripts/ci/validate-aggregate.sh
+        env:
+          NEEDS_JSON: ${{ toJSON(needs) }}

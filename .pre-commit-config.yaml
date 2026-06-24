@@ -1,0 +1,55 @@
+default_stages: [pre-commit]
+
+repos:
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v4.6.0
+    hooks:
+      - id: trailing-whitespace
+      - id: end-of-file-fixer
+      - id: check-yaml
+      - id: check-json
+        exclude: 'tsconfig.*\.json'
+      - id: check-merge-conflict
+      - id: check-case-conflict
+      - id: mixed-line-ending
+        args: [--fix=lf]
+
+  - repo: local
+    hooks:
+      - id: validate-adrs
+        name: ADR Structure
+        language: system
+        entry: bash scripts/ci/validate-adrs.sh docs/adr
+        files: '^docs/adr/.*\.md$'
+        pass_filenames: false
+
+      - id: commitlint
+        name: Commit Message
+        language: node
+        entry: npx commitlint --edit
+        stages: [commit-msg]
+        pass_filenames: false
+        additional_dependencies:
+          - '@commitlint/cli@^19'
+          - '@commitlint/config-conventional@^19'
+
+      - id: gitleaks
+        name: Secret Scan (staged)
+        language: system
+        entry: bash scripts/ci/run-gitleaks.sh staged
+        pass_filenames: false
+        always_run: true
+
+      - id: actionlint
+        name: Workflow Lint
+        language: system
+        entry: bash scripts/ci/run-actionlint.sh
+        files: '^\.github/workflows/.*\.yml$'
+        pass_filenames: false
+
+      - id: shellcheck
+        name: Shell Lint
+        language: system
+        entry: bash scripts/ci/run-shellcheck.sh
+        files: '\.sh$'
+        pass_filenames: false

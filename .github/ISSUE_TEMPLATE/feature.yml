@@ -1,0 +1,46 @@
+name: Feature
+description: New capability or enhancement
+title: "[Feature]: "
+labels:
+  - enhancement
+  - needs-spec
+body:
+  - type: textarea
+    id: description
+    attributes:
+      label: Description
+      description: What does this do for the user?
+    validations:
+      required: true
+
+  - type: textarea
+    id: acceptance_scenarios
+    attributes:
+      label: Acceptance Scenarios
+      description: BDD-style acceptance criteria (optional — add when known)
+      placeholder: |
+        Given [precondition]
+        When [action]
+        Then [outcome]
+    validations:
+      required: false
+
+  - type: dropdown
+    id: priority
+    attributes:
+      label: Priority
+      options:
+        - "P0 — Blocking"
+        - "P1 — High"
+        - "P2 — Medium"
+        - "P3 — Nice-to-have"
+    validations:
+      required: true
+
+  - type: checkboxes
+    id: impact_area
+    attributes:
+      label: Impact Area
+      description: Add project-specific areas here
+      options:
+        - label: Add project-specific areas here
