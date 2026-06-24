@@ -68,3 +68,13 @@ describe('createGeneration', function () {
     })
   })
 })
+
+describe('updateGenerationStatus', function () {
+  it('rejects DRAFT to RETIRED transition', async function () {
+    const { updateGenerationStatus } = await import('./actions')
+
+    const result = await updateGenerationStatus('gen-1', 'DRAFT', 'RETIRED')
+
+    expect(result).toMatch(/invalid/i)
+  })
+})
