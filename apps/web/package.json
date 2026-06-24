@@ -2,6 +2,9 @@
   "name": "@template/web",
   "version": "0.0.0",
   "private": true,
+  "nx": {
+    "tags": ["scope:web"]
+  },
   "scripts": {
     "dev": "next dev",
     "build": "next build",

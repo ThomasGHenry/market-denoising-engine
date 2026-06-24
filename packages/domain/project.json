@@ -1,4 +1,12 @@
 {
   "name": "domain",
-  "tags": ["scope:domain"]
+  "tags": ["scope:domain"],
+  "targets": {
+    "lint": {
+      "executor": "@nx/eslint:lint",
+      "options": {
+        "lintFilePatterns": ["packages/domain/**/*.ts"]
+      }
+    }
+  }
 }

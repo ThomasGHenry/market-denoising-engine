@@ -33,6 +33,23 @@ export default [
     },
   },
   {
+    files: ['packages/domain/**/*.ts', 'packages/domain/**/*.tsx'],
+    rules: {
+      'no-restricted-imports': [
+        'error',
+        {
+          patterns: [
+            {
+              group: ['@prisma/client', '@prisma/client/*'],
+              message:
+                'Direct Prisma client imports are forbidden in packages/domain. Use @template/db types only.',
+            },
+          ],
+        },
+      ],
+    },
+  },
+  {
     ignores: ['node_modules/**', 'dist/**', '.next/**', '.nx/**'],
   },
 ];
