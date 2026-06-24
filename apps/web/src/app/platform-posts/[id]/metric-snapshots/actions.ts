@@ -14,11 +14,11 @@ export async function createMetricSnapshot(
   if (!platformPostId) return 'Platform post ID is required'
   if (!capturedAt) return 'Captured at is required'
 
-  const parseOptionalInt = function (key: string): number | undefined {
+  const parseOptionalInt = function (key: string): number | null {
     const val = formData.get(key)
-    if (val === null || val === '') return undefined
+    if (val === null || val === '') return null
     const n = parseInt(val as string, 10)
-    return isNaN(n) ? undefined : n
+    return isNaN(n) ? null : n
   }
 
   await prisma.metricSnapshot.create({
@@ -37,7 +37,7 @@ export async function createMetricSnapshot(
       linkClicks: parseOptionalInt('linkClicks'),
       leads: parseOptionalInt('leads'),
       qualitativeScore: parseOptionalInt('qualitativeScore'),
-      notes: (formData.get('notes') as string) || undefined,
+      notes: (formData.get('notes') as string) || null,
     },
   })
 

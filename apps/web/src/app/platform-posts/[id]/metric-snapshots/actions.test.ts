@@ -60,17 +60,17 @@ describe('createMetricSnapshot', function () {
         capturedAt: new Date('2024-01-15T10:00'),
         impressions: 1000,
         likes: 50,
-        views: undefined,
-        comments: undefined,
-        shares: undefined,
-        saves: undefined,
-        follows: undefined,
-        profileClicks: undefined,
-        linkClicks: undefined,
-        leads: undefined,
-        qualitativeScore: undefined,
-        hoursSincePost: undefined,
-        notes: undefined,
+        views: null,
+        comments: null,
+        shares: null,
+        saves: null,
+        follows: null,
+        profileClicks: null,
+        linkClicks: null,
+        leads: null,
+        qualitativeScore: null,
+        hoursSincePost: null,
+        notes: null,
       },
     })
   })
@@ -102,7 +102,7 @@ describe('createMetricSnapshot', function () {
 
     expect(mockCreate).toHaveBeenCalledWith(
       expect.objectContaining({
-        data: expect.objectContaining({ impressions: undefined }),
+        data: expect.objectContaining({ impressions: null }),
       })
     )
   })
