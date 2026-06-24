@@ -1,0 +1,12 @@
+{
+  "name": "scoring",
+  "tags": ["scope:domain"],
+  "targets": {
+    "lint": {
+      "executor": "@nx/eslint:lint",
+      "options": {
+        "lintFilePatterns": ["packages/scoring/**/*.ts"]
+      }
+    }
+  }
+}
