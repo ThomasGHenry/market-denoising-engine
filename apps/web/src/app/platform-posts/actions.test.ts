@@ -1,5 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { prisma } from '@template/db'
+import { Prisma } from '@prisma/client'
 import { createPlatformPost } from './actions'
 
 vi.mock('@template/db', () => ({
@@ -11,11 +12,16 @@ vi.mock('@template/db', () => ({
     platformPost: {
       create: vi.fn(),
     },
+    $transaction: vi.fn(),
   },
 }))
 
 vi.mock('next/navigation', () => ({
   redirect: vi.fn(),
+}))
+
+vi.mock('next/cache', () => ({
+  revalidatePath: vi.fn(),
 }))
 
 beforeEach(function () {
@@ -71,17 +77,45 @@ describe('createPlatformPost', function () {
     expect(typeof result).toBe('string')
   })
 
+  it('returns error when probe does not exist', async function () {
+    type ProbeRecord = Awaited<ReturnType<typeof prisma.probe.findUnique>>
+    const mockFindUnique = vi.mocked(prisma.probe.findUnique)
+    mockFindUnique.mockResolvedValueOnce(null as ProbeRecord)
+
+    const formData = new FormData()
+    formData.set('probeId', 'probe-nonexistent')
+    formData.set('platform', 'LINKEDIN')
+    formData.set('url', 'https://linkedin.com/post/123')
+    formData.set('publishedAt', '2024-01-15T10:00')
+
+    const result = await createPlatformPost(null, formData)
+
+    expect(result).toBeTruthy()
+    expect(typeof result).toBe('string')
+  })
+
   it('calls prisma.platformPost.create with correct data when all fields are valid', async function () {
     type ProbeRecord = Awaited<ReturnType<typeof prisma.probe.findUnique>>
     const mockFindUnique = vi.mocked(prisma.probe.findUnique)
-    mockFindUnique.mockResolvedValueOnce({ id: 'probe-1', status: 'PUBLISHED' } as ProbeRecord)
+    mockFindUnique.mockResolvedValueOnce({
+      id: 'probe-1',
+      status: 'PUBLISHED',
+      generationId: 'gen-1',
+    } as ProbeRecord)
 
     type PlatformPostRecord = Awaited<ReturnType<typeof prisma.platformPost.create>>
     const mockCreate = vi.mocked(prisma.platformPost.create)
     mockCreate.mockResolvedValueOnce({ id: 'pp-1' } as PlatformPostRecord)
 
+    vi.mocked(prisma.$transaction).mockImplementation(async function (fn) {
+      return fn(prisma as Prisma.TransactionClient)
+    })
+
     const { redirect } = await import('next/navigation')
     const mockRedirect = vi.mocked(redirect)
+
+    const { revalidatePath } = await import('next/cache')
+    const mockRevalidatePath = vi.mocked(revalidatePath)
 
     const formData = new FormData()
     formData.set('probeId', 'probe-1')
@@ -97,15 +131,55 @@ describe('createPlatformPost', function () {
         platform: 'LINKEDIN',
         url: 'https://linkedin.com/post/123',
         publishedAt: new Date('2024-01-15T10:00'),
+        caption: null,
       },
     })
+    expect(mockRevalidatePath).toHaveBeenCalledWith('/probes/probe-1')
+    expect(mockRevalidatePath).toHaveBeenCalledWith('/generations/gen-1')
     expect(mockRedirect).toHaveBeenCalledWith('/probes/probe-1')
+  })
+
+  it('writes caption to database when provided', async function () {
+    type ProbeRecord = Awaited<ReturnType<typeof prisma.probe.findUnique>>
+    const mockFindUnique = vi.mocked(prisma.probe.findUnique)
+    mockFindUnique.mockResolvedValueOnce({
+      id: 'probe-1',
+      status: 'PUBLISHED',
+      generationId: 'gen-1',
+    } as ProbeRecord)
+
+    type PlatformPostRecord = Awaited<ReturnType<typeof prisma.platformPost.create>>
+    const mockCreate = vi.mocked(prisma.platformPost.create)
+    mockCreate.mockResolvedValueOnce({ id: 'pp-1' } as PlatformPostRecord)
+
+    vi.mocked(prisma.$transaction).mockImplementation(async function (fn) {
+      return fn(prisma as Prisma.TransactionClient)
+    })
+
+    const formData = new FormData()
+    formData.set('probeId', 'probe-1')
+    formData.set('platform', 'LINKEDIN')
+    formData.set('url', 'https://linkedin.com/post/123')
+    formData.set('publishedAt', '2024-01-15T10:00')
+    formData.set('caption', 'test caption')
+
+    await createPlatformPost(null, formData)
+
+    expect(mockCreate).toHaveBeenCalledWith(
+      expect.objectContaining({
+        data: expect.objectContaining({ caption: 'test caption' }),
+      })
+    )
   })
 
   it('calls probe.update twice when probe is DRAFT (DRAFT→READY then READY→PUBLISHED)', async function () {
     type ProbeRecord = Awaited<ReturnType<typeof prisma.probe.findUnique>>
     const mockFindUnique = vi.mocked(prisma.probe.findUnique)
-    mockFindUnique.mockResolvedValueOnce({ id: 'probe-1', status: 'DRAFT' } as ProbeRecord)
+    mockFindUnique.mockResolvedValueOnce({
+      id: 'probe-1',
+      status: 'DRAFT',
+      generationId: 'gen-1',
+    } as ProbeRecord)
 
     type ProbeUpdateRecord = Awaited<ReturnType<typeof prisma.probe.update>>
     const mockUpdate = vi.mocked(prisma.probe.update)
@@ -114,6 +188,10 @@ describe('createPlatformPost', function () {
     type PlatformPostRecord = Awaited<ReturnType<typeof prisma.platformPost.create>>
     const mockCreate = vi.mocked(prisma.platformPost.create)
     mockCreate.mockResolvedValueOnce({ id: 'pp-1' } as PlatformPostRecord)
+
+    vi.mocked(prisma.$transaction).mockImplementation(async function (fn) {
+      return fn(prisma as Prisma.TransactionClient)
+    })
 
     const formData = new FormData()
     formData.set('probeId', 'probe-1')
@@ -137,7 +215,11 @@ describe('createPlatformPost', function () {
   it('calls probe.update once when probe is READY (READY→PUBLISHED)', async function () {
     type ProbeRecord = Awaited<ReturnType<typeof prisma.probe.findUnique>>
     const mockFindUnique = vi.mocked(prisma.probe.findUnique)
-    mockFindUnique.mockResolvedValueOnce({ id: 'probe-1', status: 'READY' } as ProbeRecord)
+    mockFindUnique.mockResolvedValueOnce({
+      id: 'probe-1',
+      status: 'READY',
+      generationId: 'gen-1',
+    } as ProbeRecord)
 
     type ProbeUpdateRecord = Awaited<ReturnType<typeof prisma.probe.update>>
     const mockUpdate = vi.mocked(prisma.probe.update)
@@ -146,6 +228,10 @@ describe('createPlatformPost', function () {
     type PlatformPostRecord = Awaited<ReturnType<typeof prisma.platformPost.create>>
     const mockCreate = vi.mocked(prisma.platformPost.create)
     mockCreate.mockResolvedValueOnce({ id: 'pp-1' } as PlatformPostRecord)
+
+    vi.mocked(prisma.$transaction).mockImplementation(async function (fn) {
+      return fn(prisma as Prisma.TransactionClient)
+    })
 
     const formData = new FormData()
     formData.set('probeId', 'probe-1')
@@ -165,13 +251,21 @@ describe('createPlatformPost', function () {
   it('does not call probe.update when probe is already PUBLISHED', async function () {
     type ProbeRecord = Awaited<ReturnType<typeof prisma.probe.findUnique>>
     const mockFindUnique = vi.mocked(prisma.probe.findUnique)
-    mockFindUnique.mockResolvedValueOnce({ id: 'probe-1', status: 'PUBLISHED' } as ProbeRecord)
+    mockFindUnique.mockResolvedValueOnce({
+      id: 'probe-1',
+      status: 'PUBLISHED',
+      generationId: 'gen-1',
+    } as ProbeRecord)
 
     const mockUpdate = vi.mocked(prisma.probe.update)
 
     type PlatformPostRecord = Awaited<ReturnType<typeof prisma.platformPost.create>>
     const mockCreate = vi.mocked(prisma.platformPost.create)
     mockCreate.mockResolvedValueOnce({ id: 'pp-1' } as PlatformPostRecord)
+
+    vi.mocked(prisma.$transaction).mockImplementation(async function (fn) {
+      return fn(prisma as Prisma.TransactionClient)
+    })
 
     const formData = new FormData()
     formData.set('probeId', 'probe-1')

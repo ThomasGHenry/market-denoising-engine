@@ -1,8 +1,10 @@
 'use server'
 
 import { prisma } from '@template/db'
+import type { Prisma } from '@prisma/client'
 import type { Platform } from '@template/domain'
 import { redirect } from 'next/navigation'
+import { revalidatePath } from 'next/cache'
 
 export async function createPlatformPost(
   prevState: string | null,
@@ -12,6 +14,8 @@ export async function createPlatformPost(
   const platform = formData.get('platform') as string | null
   const url = formData.get('url') as string | null
   const publishedAt = formData.get('publishedAt') as string | null
+  const captionRaw = formData.get('caption') as string | null
+  const caption = captionRaw && captionRaw.trim() !== '' ? captionRaw.trim() : null
 
   const missingError = firstMissingFieldError({ probeId, platform, url, publishedAt })
   if (missingError) {
@@ -19,27 +23,38 @@ export async function createPlatformPost(
   }
 
   const probe = await prisma.probe.findUnique({ where: { id: probeId as string } })
+  if (!probe) {
+    return 'Probe not found'
+  }
 
-  await transitionProbeToPublished(probe?.status ?? null, probeId as string)
-
-  await prisma.platformPost.create({
-    data: {
-      probeId: probeId as string,
-      platform: platform as Platform,
-      url: url as string,
-      publishedAt: new Date(publishedAt as string),
-    },
+  await prisma.$transaction(async function (tx: Prisma.TransactionClient) {
+    await transitionProbeToPublished(probe.status, probeId as string, tx)
+    await tx.platformPost.create({
+      data: {
+        probeId: probeId as string,
+        platform: platform as Platform,
+        url: url as string,
+        publishedAt: new Date(publishedAt as string),
+        caption,
+      },
+    })
   })
 
+  revalidatePath('/probes/' + (probeId as string))
+  revalidatePath('/generations/' + probe.generationId)
   redirect('/probes/' + (probeId as string))
 }
 
-async function transitionProbeToPublished(status: string | null, probeId: string): Promise<void> {
+async function transitionProbeToPublished(
+  status: string,
+  probeId: string,
+  tx: Prisma.TransactionClient
+): Promise<void> {
   if (status === 'DRAFT') {
-    await prisma.probe.update({ where: { id: probeId }, data: { status: 'READY' } })
-    await prisma.probe.update({ where: { id: probeId }, data: { status: 'PUBLISHED' } })
+    await tx.probe.update({ where: { id: probeId }, data: { status: 'READY' } })
+    await tx.probe.update({ where: { id: probeId }, data: { status: 'PUBLISHED' } })
   } else if (status === 'READY') {
-    await prisma.probe.update({ where: { id: probeId }, data: { status: 'PUBLISHED' } })
+    await tx.probe.update({ where: { id: probeId }, data: { status: 'PUBLISHED' } })
   }
 }
 
