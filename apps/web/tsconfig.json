@@ -23,7 +23,6 @@
     "next-env.d.ts",
     "next.config.ts",
     "src/**/*",
-    "vitest.config.ts",
     ".next/types/**/*.ts"
   ],
   "exclude": [

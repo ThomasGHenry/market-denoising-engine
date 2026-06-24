@@ -2,6 +2,8 @@ import { notFound } from 'next/navigation'
 import Link from 'next/link'
 import { prisma } from '@template/db'
 import ProbeStatusControls from './ProbeStatusControls'
+import PlatformPostList from './PlatformPostList'
+import PlatformPostForm from './PlatformPostForm'
 
 interface PageProps {
   params: Promise<{ id: string }>
@@ -73,6 +75,12 @@ export default async function ProbeDetailPage({ params }: PageProps) {
       )}
 
       <ProbeStatusControls id={probe.id} status={probe.status} generationId={probe.generation.id} />
+
+      <section>
+        <h2>Platform Posts</h2>
+        <PlatformPostList posts={probe.platformPosts} />
+        <PlatformPostForm probeId={probe.id} />
+      </section>
     </main>
   )
 }
