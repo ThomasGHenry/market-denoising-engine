@@ -77,4 +77,20 @@ describe('updateGenerationStatus', function () {
 
     expect(result).toMatch(/invalid/i)
   })
+
+  it('allows DRAFT to ACTIVE transition', async function () {
+    const { prisma: mockPrisma } = await import('@template/db')
+    const mockUpdate = vi.mocked((mockPrisma as any).generation.update)
+    mockUpdate.mockResolvedValueOnce({ id: 'gen-1' } as any)
+
+    const { updateGenerationStatus } = await import('./actions')
+
+    const result = await updateGenerationStatus('gen-1', 'DRAFT', 'ACTIVE')
+
+    expect(result).toBeNull()
+    expect(mockUpdate).toHaveBeenCalledWith({
+      where: { id: 'gen-1' },
+      data: { status: 'ACTIVE' },
+    })
+  })
 })
