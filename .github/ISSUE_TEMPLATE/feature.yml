@@ -41,6 +41,14 @@ body:
     id: impact_area
     attributes:
       label: Impact Area
-      description: Add project-specific areas here
       options:
-        - label: Add project-specific areas here
+        - label: Generation
+        - label: Probe
+        - label: Platform post / metric snapshot
+        - label: Scoring / fitness function
+        - label: Signal review
+        - label: Mutation
+        - label: Dashboard
+        - label: Domain / scoring package
+        - label: Database / schema
+        - label: CI / governance
