@@ -48,7 +48,7 @@ function makeProbe(gen: Generation): Probe {
     format: Format.SHORT_TEXT,
     status: ProbeStatus.DRAFT,
     tags: [],
-    effortMinutes: null,
+    effortMinutes: 10,
     createdAt: new Date(),
     updatedAt: new Date(),
     platformPosts: [],

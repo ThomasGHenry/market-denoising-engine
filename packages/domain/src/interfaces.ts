@@ -37,7 +37,7 @@ export interface Probe {
   format: Format
   status: ProbeStatus
   tags: string[]
-  effortMinutes: number | null
+  effortMinutes: number
   createdAt: Date
   updatedAt: Date
   platformPosts: PlatformPost[]
