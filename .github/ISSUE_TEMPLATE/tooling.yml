@@ -1,23 +1,42 @@
 name: Tooling
-description: CI, infrastructure, or governance change
+description: CI, infrastructure, or governance change governed by ADRs
 title: "[Tooling]: "
 labels:
   - tooling
   - needs-adr
 body:
   - type: textarea
-    id: description
+    id: scope
     attributes:
-      label: Description
-      description: What CI/infra/governance change is needed?
+      label: Scope
+      description: What changes, stated as verifiable outcomes.
+    validations:
+      required: true
+
+  - type: textarea
+    id: motivation
+    attributes:
+      label: Motivation
+      description: Why now, and what rots or stays broken if this is skipped.
     validations:
       required: true
 
   - type: input
     id: adr_number
     attributes:
-      label: ADR Number
-      description: Which ADR number governs or will govern this change?
-      placeholder: e.g. 0007
+      label: Governing ADR
+      description: ADR number this implements, or "new ADR needed".
+      placeholder: e.g. 0017, or "new ADR needed"
+    validations:
+      required: false
+
+  - type: textarea
+    id: acceptance
+    attributes:
+      label: Acceptance criteria
+      description: The failing CI gate or passing check that proves completion.
+      placeholder: |
+        - `npm run lint` passes with no boundary violations
+        - Phase 0 `adr-structure` check passes
     validations:
       required: true

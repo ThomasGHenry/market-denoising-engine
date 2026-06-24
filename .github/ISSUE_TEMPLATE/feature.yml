@@ -9,9 +9,17 @@ body:
     id: description
     attributes:
       label: Description
-      description: What does this do for the user?
+      description: What does this do for the user? Focus on outcomes, not implementation.
     validations:
       required: true
+
+  - type: textarea
+    id: learning_spine_check
+    attributes:
+      label: Learning spine check
+      description: How does this make the loop (probe → publish → measure → review → mutate) more visible, measurable, or repeatable? Skip if not applicable.
+    validations:
+      required: false
 
   - type: textarea
     id: acceptance_scenarios
@@ -22,6 +30,14 @@ body:
         Given [precondition]
         When [action]
         Then [outcome]
+    validations:
+      required: false
+
+  - type: textarea
+    id: out_of_scope
+    attributes:
+      label: Out of scope
+      description: Anything explicitly excluded, including PRD §7 out-of-scope items.
     validations:
       required: false
 
@@ -41,6 +57,14 @@ body:
     id: impact_area
     attributes:
       label: Impact Area
-      description: Add project-specific areas here
       options:
-        - label: Add project-specific areas here
+        - label: Generation
+        - label: Probe
+        - label: Platform post / metric snapshot
+        - label: Scoring / fitness function
+        - label: Signal review
+        - label: Mutation
+        - label: Dashboard
+        - label: Domain / scoring package
+        - label: Database / schema
+        - label: CI / governance
