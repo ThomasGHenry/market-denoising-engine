@@ -2,6 +2,7 @@ import { prisma } from '@template/db'
 import { notFound } from 'next/navigation'
 import Link from 'next/link'
 import StatusControls from './StatusControls'
+import { computeProbesFitness } from './computeProbesFitness'
 
 export const dynamic = 'force-dynamic'
 
@@ -13,12 +14,6 @@ async function loadGeneration(id: string) {
   return prisma.generation.findUnique({
     where: { id },
     include: {
-      probes: {
-        orderBy: [
-          { fitnessScore: { sort: 'desc', nulls: 'last' } },
-          { createdAt: 'asc' },
-        ],
-      },
       parent: {
         select: { id: true, title: true },
       },
@@ -28,7 +23,10 @@ async function loadGeneration(id: string) {
 
 export default async function GenerationDetailPage({ params }: PageProps) {
   const { id } = await params
-  const generation = await loadGeneration(id)
+  const [generation, probesWithFitness] = await Promise.all([
+    loadGeneration(id),
+    computeProbesFitness(id),
+  ])
 
   if (!generation) {
     notFound()
@@ -73,7 +71,7 @@ export default async function GenerationDetailPage({ params }: PageProps) {
       </div>
 
       <h2 className="text-xl font-semibold mb-4">Probes</h2>
-      {generation.probes.length === 0 ? (
+      {probesWithFitness.length === 0 ? (
         <p className="text-gray-500">No probes yet.</p>
       ) : (
         <table className="w-full border-collapse">
@@ -82,18 +80,31 @@ export default async function GenerationDetailPage({ params }: PageProps) {
               <th className="text-left py-2 pr-4">Title</th>
               <th className="text-left py-2 pr-4">Format</th>
               <th className="text-left py-2 pr-4">Status</th>
-              <th className="text-left py-2">Fitness Score</th>
+              <th className="text-left py-2">
+                Best Observed Fitness
+                <span className="ml-2 text-xs font-normal text-gray-400">{probesWithFitness[0]?.fitnessResult.formulaVersion ?? 'default_v0'}</span>
+              </th>
             </tr>
           </thead>
           <tbody>
-            {generation.probes.map(function (probe) {
+            {probesWithFitness.map(function (probe) {
               return (
                 <tr key={probe.id} className="border-b hover:bg-gray-50">
                   <td className="py-2 pr-4">{probe.title}</td>
                   <td className="py-2 pr-4">{probe.format}</td>
                   <td className="py-2 pr-4">{probe.status}</td>
                   <td className="py-2">
-                    {probe.fitnessScore !== null ? probe.fitnessScore.toFixed(2) : '—'}
+                    {probe.fitnessResult.rawScore.toFixed(2)}
+                    {probe.fitnessResult.scorePerEffortMinute !== null && (
+                      <span className="ml-2 text-xs text-gray-500">
+                        {probe.fitnessResult.scorePerEffortMinute.toFixed(2)} /min
+                      </span>
+                    )}
+                    {probe.fitnessResult.scorePerImpression !== null && (
+                      <span className="ml-2 text-xs text-gray-500">
+                        {probe.fitnessResult.scorePerImpression.toFixed(4)} /imp
+                      </span>
+                    )}
                   </td>
                 </tr>
               )
