@@ -3,14 +3,15 @@
 import { prisma } from '@template/db'
 import { redirect } from 'next/navigation'
 import { revalidatePath } from 'next/cache'
+import { SignalStrength, Confidence } from '@template/domain'
 
 export async function createSignalReview(
   prevState: string | null,
   formData: FormData
 ): Promise<string | null> {
   const probeId = formData.get('probeId') as string
-  const signal = formData.get('signal') as string
-  const confidence = formData.get('confidence') as string
+  const signal = formData.get('signal') as SignalStrength
+  const confidence = formData.get('confidence') as Confidence
   const observation = formData.get('observation') as string
   const interpretation = formData.get('interpretation') as string
   const decision = (formData.get('decision') as string) || null

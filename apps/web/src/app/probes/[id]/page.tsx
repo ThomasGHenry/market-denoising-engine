@@ -4,6 +4,8 @@ import { prisma } from '@template/db'
 import ProbeStatusControls from './ProbeStatusControls'
 import PlatformPostList from './PlatformPostList'
 import PlatformPostForm from './PlatformPostForm'
+import SignalReviewList from './signal-reviews/SignalReviewList'
+import SignalReviewForm from './signal-reviews/SignalReviewForm'
 
 interface PageProps {
   params: Promise<{ id: string }>
@@ -58,21 +60,11 @@ export default async function ProbeDetailPage({ params }: PageProps) {
         </section>
       )}
 
-      {probe.reviews.length > 0 && (
-        <section>
-          <h2>Reviews</h2>
-          {probe.reviews.map(function (review) {
-            return (
-              <div key={review.id}>
-                <p>Signal: {review.signal} | Confidence: {review.confidence}</p>
-                <p>Observation: {review.observation}</p>
-                <p>Interpretation: {review.interpretation}</p>
-                {review.decision && <p>Decision: {review.decision}</p>}
-              </div>
-            )
-          })}
-        </section>
-      )}
+      <section>
+        <h2>Signal Reviews</h2>
+        <SignalReviewList reviews={probe.reviews} />
+        <SignalReviewForm probeId={probe.id} />
+      </section>
 
       <ProbeStatusControls id={probe.id} status={probe.status} generationId={probe.generation.id} />
 
