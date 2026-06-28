@@ -13,30 +13,24 @@ export async function createMetricSnapshot(
 
   if (!platformPostId) return 'Platform post ID is required'
   if (!capturedAt) return 'Captured at is required'
-
-  const parseOptionalInt = function (key: string): number | null {
-    const val = formData.get(key)
-    if (val === null || val === '') return null
-    const n = parseInt(val as string, 10)
-    return isNaN(n) ? null : n
-  }
+  if (isNaN(new Date(capturedAt).getTime())) return 'capturedAt must be a valid date'
 
   await prisma.metricSnapshot.create({
     data: {
       platformPostId,
       capturedAt: new Date(capturedAt),
-      hoursSincePost: parseOptionalInt('hoursSincePost'),
-      impressions: parseOptionalInt('impressions'),
-      views: parseOptionalInt('views'),
-      likes: parseOptionalInt('likes'),
-      comments: parseOptionalInt('comments'),
-      shares: parseOptionalInt('shares'),
-      saves: parseOptionalInt('saves'),
-      follows: parseOptionalInt('follows'),
-      profileClicks: parseOptionalInt('profileClicks'),
-      linkClicks: parseOptionalInt('linkClicks'),
-      leads: parseOptionalInt('leads'),
-      qualitativeScore: parseOptionalInt('qualitativeScore'),
+      hoursSincePost: parseOptionalInt(formData, 'hoursSincePost'),
+      impressions: parseOptionalInt(formData, 'impressions'),
+      views: parseOptionalInt(formData, 'views'),
+      likes: parseOptionalInt(formData, 'likes'),
+      comments: parseOptionalInt(formData, 'comments'),
+      shares: parseOptionalInt(formData, 'shares'),
+      saves: parseOptionalInt(formData, 'saves'),
+      follows: parseOptionalInt(formData, 'follows'),
+      profileClicks: parseOptionalInt(formData, 'profileClicks'),
+      linkClicks: parseOptionalInt(formData, 'linkClicks'),
+      leads: parseOptionalInt(formData, 'leads'),
+      qualitativeScore: parseOptionalInt(formData, 'qualitativeScore'),
       notes: (formData.get('notes') as string) || null,
     },
   })
@@ -57,29 +51,22 @@ export async function updateMetricSnapshot(
   if (!platformPostId) return 'Platform post ID is required'
   if (!capturedAt) return 'Captured at is required'
 
-  const parseOptionalInt = function (key: string): number | null {
-    const val = formData.get(key)
-    if (val === null || val === '') return null
-    const n = parseInt(val as string, 10)
-    return isNaN(n) ? null : n
-  }
-
   await prisma.metricSnapshot.update({
-    where: { id },
+    where: { id, platformPostId },
     data: {
       capturedAt: new Date(capturedAt),
-      hoursSincePost: parseOptionalInt('hoursSincePost'),
-      impressions: parseOptionalInt('impressions'),
-      views: parseOptionalInt('views'),
-      likes: parseOptionalInt('likes'),
-      comments: parseOptionalInt('comments'),
-      shares: parseOptionalInt('shares'),
-      saves: parseOptionalInt('saves'),
-      follows: parseOptionalInt('follows'),
-      profileClicks: parseOptionalInt('profileClicks'),
-      linkClicks: parseOptionalInt('linkClicks'),
-      leads: parseOptionalInt('leads'),
-      qualitativeScore: parseOptionalInt('qualitativeScore'),
+      hoursSincePost: parseOptionalInt(formData, 'hoursSincePost'),
+      impressions: parseOptionalInt(formData, 'impressions'),
+      views: parseOptionalInt(formData, 'views'),
+      likes: parseOptionalInt(formData, 'likes'),
+      comments: parseOptionalInt(formData, 'comments'),
+      shares: parseOptionalInt(formData, 'shares'),
+      saves: parseOptionalInt(formData, 'saves'),
+      follows: parseOptionalInt(formData, 'follows'),
+      profileClicks: parseOptionalInt(formData, 'profileClicks'),
+      linkClicks: parseOptionalInt(formData, 'linkClicks'),
+      leads: parseOptionalInt(formData, 'leads'),
+      qualitativeScore: parseOptionalInt(formData, 'qualitativeScore'),
       notes: (formData.get('notes') as string) || null,
     },
   })
@@ -98,8 +85,15 @@ export async function deleteMetricSnapshot(
   if (!id) return 'Snapshot ID is required'
   if (!platformPostId) return 'Platform post ID is required'
 
-  await prisma.metricSnapshot.delete({ where: { id } })
+  await prisma.metricSnapshot.delete({ where: { id, platformPostId } })
 
   revalidatePath('/platform-posts/' + platformPostId)
   return null
+}
+
+function parseOptionalInt(formData: FormData, key: string): number | null {
+  const val = formData.get(key)
+  if (val === null || val === '') return null
+  const n = parseInt(val as string, 10)
+  return isNaN(n) ? null : n
 }
