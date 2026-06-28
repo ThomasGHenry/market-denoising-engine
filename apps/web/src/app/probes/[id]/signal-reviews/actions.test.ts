@@ -125,6 +125,48 @@ describe('createSignalReview', function () {
     })
   })
 
+  it('returns error when signal is not a valid enum value', async function () {
+    const formData = new FormData()
+    formData.set('probeId', 'probe-1')
+    formData.set('signal', 'BOGUS')
+    formData.set('confidence', 'MEDIUM')
+    formData.set('observation', 'Post reached 2k people')
+    formData.set('interpretation', 'Audience responds to pain framing')
+
+    const result = await createSignalReview(null, formData)
+
+    expect(result).toBeTruthy()
+    expect(mockCreate).not.toHaveBeenCalled()
+  })
+
+  it('returns error when confidence is not a valid enum value', async function () {
+    const formData = new FormData()
+    formData.set('probeId', 'probe-1')
+    formData.set('signal', 'PROMISING')
+    formData.set('confidence', 'BOGUS')
+    formData.set('observation', 'Post reached 2k people')
+    formData.set('interpretation', 'Audience responds to pain framing')
+
+    const result = await createSignalReview(null, formData)
+
+    expect(result).toBeTruthy()
+    expect(mockCreate).not.toHaveBeenCalled()
+  })
+
+  it('returns error string when prisma throws', async function () {
+    mockCreate.mockRejectedValueOnce(new Error('DB down'))
+    const formData = new FormData()
+    formData.set('probeId', 'probe-1')
+    formData.set('signal', 'PROMISING')
+    formData.set('confidence', 'MEDIUM')
+    formData.set('observation', 'Post reached 2k people')
+    formData.set('interpretation', 'Audience responds to pain framing')
+
+    const result = await createSignalReview(null, formData)
+
+    expect(result).toBeTruthy()
+  })
+
   it('calls revalidatePath with probe path and redirects', async function () {
     const formData = new FormData()
     formData.set('probeId', 'probe-1')

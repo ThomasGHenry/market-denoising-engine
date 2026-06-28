@@ -22,10 +22,22 @@ export async function createSignalReview(
   if (!observation) return 'Observation is required'
   if (!interpretation) return 'Interpretation is required'
 
-  await prisma.signalReview.create({
-    data: { probeId, signal, confidence, observation, interpretation, decision },
-  })
+  const validSignals = Object.values(SignalStrength)
+  if (!validSignals.includes(signal as SignalStrength)) {
+    return 'Invalid signal value'
+  }
+  const validConfidences = Object.values(Confidence)
+  if (!validConfidences.includes(confidence as Confidence)) {
+    return 'Invalid confidence value'
+  }
 
-  revalidatePath('/probes/' + probeId)
+  try {
+    await prisma.signalReview.create({
+      data: { probeId, signal, confidence, observation, interpretation, decision },
+    })
+    revalidatePath('/probes/' + probeId)
+  } catch {
+    return 'Failed to save review'
+  }
   redirect('/probes/' + probeId)
 }
