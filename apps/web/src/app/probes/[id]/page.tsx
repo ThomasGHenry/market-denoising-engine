@@ -1,3 +1,4 @@
+import React from 'react'
 import { notFound } from 'next/navigation'
 import Link from 'next/link'
 import { prisma } from '@template/db'
@@ -6,6 +7,7 @@ import PlatformPostList from './PlatformPostList'
 import PlatformPostForm from './PlatformPostForm'
 import SignalReviewList from './signal-reviews/SignalReviewList'
 import SignalReviewForm from './signal-reviews/SignalReviewForm'
+import MutationForm from './MutationForm'
 
 interface PageProps {
   params: Promise<{ id: string }>
@@ -72,6 +74,23 @@ export default async function ProbeDetailPage({ params }: PageProps) {
         <h2>Platform Posts</h2>
         <PlatformPostList posts={probe.platformPosts} />
         <PlatformPostForm probeId={probe.id} />
+      </section>
+
+      <section>
+        <h2>Mutations</h2>
+        {probe.mutations.map(function (mutation) {
+          return (
+            <div key={mutation.id}>
+              <p>{mutation.mutationType} — {mutation.description} ({mutation.status})</p>
+              <Link
+                href={`/probes/new?rawInput=${encodeURIComponent(mutation.description)}&parentProbeId=${mutation.sourceProbeId}`}
+              >
+                Create probe from mutation
+              </Link>
+            </div>
+          )
+        })}
+        <MutationForm probeId={probe.id} />
       </section>
     </main>
   )
