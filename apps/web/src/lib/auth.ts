@@ -1,43 +1,46 @@
 import NextAuth, { type NextAuthResult } from 'next-auth'
 import GitHub from 'next-auth/providers/github'
+import Resend from 'next-auth/providers/resend'
+import { PrismaAdapter } from '@auth/prisma-adapter'
+import { PrismaClient } from '@prisma/client'
+import { PrismaPg } from '@prisma/adapter-pg'
+import type { Provider } from '@auth/core/providers'
 
-const ALLOWED_LOGIN = 'ThomasGHenry'
 const ALLOWED_EMAIL = 'thomasghenry@gmail.com'
-
-export function isAllowedLogin(login: string): boolean {
-  return login === ALLOWED_LOGIN
-}
 
 export function isAllowedEmail(email: string): boolean {
   return email === ALLOWED_EMAIL
 }
 
-function isAuthorized({ auth }: { auth: { user?: { login?: string } } | null }): boolean {
-  const login = auth?.user?.login
-  if (!login) return false
-  return isAllowedLogin(login)
+function buildAuthPrismaClient(): PrismaClient {
+  const url = process.env.DATABASE_URL_UNPOOLED ?? process.env.DATABASE_URL ?? ''
+  const pgAdapter = new PrismaPg({ connectionString: url })
+  return new PrismaClient({ adapter: pgAdapter })
+}
+
+function buildProviders(): Provider[] {
+  const from = process.env.AUTH_EMAIL_FROM ?? 'MDE <onboarding@resend.dev>'
+  const providers: Provider[] = [Resend({ from })]
+  if (process.env.AUTH_GITHUB_ID) {
+    providers.push(GitHub as Provider)
+  }
+  return providers
+}
+
+function isAuthorized(session: { user?: { email?: string | null } } | null): boolean {
+  const email = session?.user?.email
+  if (!email) return false
+  return isAllowedEmail(email)
 }
 
 const nextAuth: NextAuthResult = NextAuth({
-  providers: [GitHub],
-  pages: {
-    signIn: '/login',
-  },
+  adapter: PrismaAdapter(buildAuthPrismaClient()),
+  providers: buildProviders(),
+  session: { strategy: 'jwt' },
+  pages: { signIn: '/login' },
   callbacks: {
-    jwt: function jwtCallback({ token, profile }) {
-      if (profile) {
-        token.login = (profile as { login?: string }).login
-      }
-      return token
-    },
-    session: function sessionCallback({ session, token }) {
-      if (token.login) {
-        (session.user as typeof session.user & { login: string }).login = token.login as string
-      }
-      return session
-    },
     authorized: function authorizedCallback({ auth: session }) {
-      return isAuthorized({ auth: session as { user?: { login?: string } } | null })
+      return isAuthorized(session as { user?: { email?: string | null } } | null)
     },
   },
 })
