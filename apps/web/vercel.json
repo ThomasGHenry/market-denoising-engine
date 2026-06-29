@@ -1,4 +1,4 @@
 {
-  "buildCommand": "cd ../.. && prisma generate --config packages/db/prisma.config.ts && DATABASE_URL=$DATABASE_URL_UNPOOLED prisma migrate deploy --config packages/db/prisma.config.ts && npx nx run web:build",
+  "buildCommand": "cd ../.. && rm -rf apps/web/.next/cache && prisma generate --config packages/db/prisma.config.ts && DATABASE_URL=$DATABASE_URL_UNPOOLED prisma migrate deploy --config packages/db/prisma.config.ts && npx nx run web:build",
   "outputDirectory": ".next"
 }
