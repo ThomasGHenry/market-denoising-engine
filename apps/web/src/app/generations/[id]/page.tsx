@@ -90,7 +90,11 @@ export default async function GenerationDetailPage({ params }: PageProps) {
             {probesWithFitness.map(function (probe) {
               return (
                 <tr key={probe.id} className="border-b hover:bg-gray-50">
-                  <td className="py-2 pr-4">{probe.title}</td>
+                  <td className="py-2 pr-4">
+                    <Link href={`/probes/${probe.id}`} className="text-blue-600 hover:underline">
+                      {probe.title}
+                    </Link>
+                  </td>
                   <td className="py-2 pr-4">{probe.format}</td>
                   <td className="py-2 pr-4">{probe.status}</td>
                   <td className="py-2">
