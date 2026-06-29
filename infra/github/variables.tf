@@ -51,3 +51,15 @@ variable "vercel_token" {
   type        = string
   sensitive   = true
 }
+
+variable "resend_api_key" {
+  description = "Resend full-access API key for domain management — BW item: mde-auth-secrets"
+  type        = string
+  sensitive   = true
+}
+
+variable "dreamhost_api_key" {
+  description = "Dreamhost API key (dns-* access) — BW item: dreamhost-api-key"
+  type        = string
+  sensitive   = true
+}

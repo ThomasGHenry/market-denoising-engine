@@ -18,17 +18,17 @@ resource "github_repository" "repo" {
   description = "Market Denoising Engine — content-analytics learning loop"
   visibility  = "public"
 
-  is_template                  = false
-  allow_squash_merge           = true
-  allow_merge_commit           = false
-  allow_rebase_merge           = false
-  squash_merge_commit_title    = "PR_TITLE"
-  squash_merge_commit_message  = "BLANK"
-  delete_branch_on_merge       = true
-  allow_auto_merge       = true
-  has_issues             = true
-  has_projects           = false
-  has_wiki               = false
+  is_template                 = false
+  allow_squash_merge          = true
+  allow_merge_commit          = false
+  allow_rebase_merge          = false
+  squash_merge_commit_title   = "PR_TITLE"
+  squash_merge_commit_message = "BLANK"
+  delete_branch_on_merge      = true
+  allow_auto_merge            = true
+  has_issues                  = true
+  has_projects                = false
+  has_wiki                    = false
 
   lifecycle {
     prevent_destroy = true
@@ -148,4 +148,16 @@ resource "github_actions_secret" "tf_var_github_token" {
   repository      = github_repository.repo.name
   secret_name     = "TF_VAR_github_token"
   plaintext_value = var.github_token
+}
+
+resource "github_actions_secret" "tf_var_resend_api_key" {
+  repository      = github_repository.repo.name
+  secret_name     = "TF_VAR_resend_api_key"
+  plaintext_value = var.resend_api_key
+}
+
+resource "github_actions_secret" "tf_var_dreamhost_api_key" {
+  repository      = github_repository.repo.name
+  secret_name     = "TF_VAR_dreamhost_api_key"
+  plaintext_value = var.dreamhost_api_key
 }
