@@ -10,6 +10,7 @@ export const authConfig: NextAuthConfig = {
   providers: [],
   pages: { signIn: '/login' },
   session: { strategy: 'jwt' },
+  trustHost: true,
   callbacks: {
     authorized: function authorizedCallback({ auth }) {
       const email = auth?.user?.email
