@@ -1,2 +1,12 @@
 .vercel
 .env*
+
+# Dependencies
+**/node_modules
+
+# NX cache
+.nx/
+
+# Next.js build output
+apps/web/.next/
+apps/web/dist/
