@@ -107,3 +107,45 @@ resource "github_issue_label" "labels" {
   color       = each.value.color
   description = each.value.description
 }
+
+resource "github_actions_secret" "tf_var_auth_github_id" {
+  repository      = github_repository.repo.name
+  secret_name     = "TF_VAR_auth_github_id"
+  plaintext_value = var.auth_github_id
+}
+
+resource "github_actions_secret" "tf_var_auth_github_secret" {
+  repository      = github_repository.repo.name
+  secret_name     = "TF_VAR_auth_github_secret"
+  plaintext_value = var.auth_github_secret
+}
+
+resource "github_actions_secret" "tf_var_auth_secret" {
+  repository      = github_repository.repo.name
+  secret_name     = "TF_VAR_auth_secret"
+  plaintext_value = var.auth_secret
+}
+
+resource "github_actions_secret" "tf_var_auth_resend_key" {
+  repository      = github_repository.repo.name
+  secret_name     = "TF_VAR_auth_resend_key"
+  plaintext_value = var.auth_resend_key
+}
+
+resource "github_actions_secret" "tf_var_neon_api_key" {
+  repository      = github_repository.repo.name
+  secret_name     = "TF_VAR_neon_api_key"
+  plaintext_value = var.neon_api_key
+}
+
+resource "github_actions_secret" "tf_var_vercel_token" {
+  repository      = github_repository.repo.name
+  secret_name     = "TF_VAR_vercel_token"
+  plaintext_value = var.vercel_token
+}
+
+resource "github_actions_secret" "tf_var_github_token" {
+  repository      = github_repository.repo.name
+  secret_name     = "TF_VAR_github_token"
+  plaintext_value = var.github_token
+}

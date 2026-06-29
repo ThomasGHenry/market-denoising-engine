@@ -45,3 +45,9 @@ variable "auth_github_secret" {
   type        = string
   sensitive   = true
 }
+
+variable "auth_resend_key" {
+  description = "Resend API key for transactional email"
+  type        = string
+  sensitive   = true
+}
