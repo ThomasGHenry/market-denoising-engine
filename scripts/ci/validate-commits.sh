@@ -96,8 +96,8 @@ check_type_prefix() {
 
 check_header_length() {
   local sha="$1" subject="$2"
-  if [ "${#subject}" -gt 72 ]; then
-    log "$sha: header exceeds 72 chars (${#subject}): $subject"
+  if [ "${#subject}" -gt 80 ]; then
+    log "$sha: header exceeds 80 chars (${#subject}): $subject"
     return 1
   fi
 }

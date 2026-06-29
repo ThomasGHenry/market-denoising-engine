@@ -53,3 +53,11 @@ repos:
         entry: bash scripts/ci/run-shellcheck.sh
         files: '\.sh$'
         pass_filenames: false
+
+      - id: validate-commits-push
+        name: Commit Messages (push range)
+        language: system
+        entry: bash scripts/hooks/pre-push.sh
+        stages: [pre-push]
+        pass_filenames: false
+        always_run: true
