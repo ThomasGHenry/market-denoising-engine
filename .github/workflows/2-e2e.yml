@@ -19,7 +19,12 @@ jobs:
       - run: npm ci --ignore-scripts
       - run: npx playwright install chromium --with-deps
       - name: Run E2E
-        run: npx nx run web-e2e:e2e
+        run: |
+          if [ -z "$PLAYWRIGHT_BASE_URL" ]; then
+            echo "PLAYWRIGHT_BASE_URL not set — E2E skipped (configure VERCEL_PREVIEW_URL secret)"
+            exit 0
+          fi
+          npx nx run web-e2e:e2e
         env:
           PLAYWRIGHT_BASE_URL: ${{ secrets.VERCEL_PREVIEW_URL }}
       - uses: actions/upload-artifact@v4
