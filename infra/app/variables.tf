@@ -27,3 +27,21 @@ variable "project_name" {
   type        = string
   default     = "market-denoising-engine"
 }
+
+variable "auth_secret" {
+  description = "NextAuth AUTH_SECRET — generate with: openssl rand -hex 32"
+  type        = string
+  sensitive   = true
+}
+
+variable "auth_github_id" {
+  description = "GitHub OAuth App Client ID — github.com/settings/developers"
+  type        = string
+  sensitive   = true
+}
+
+variable "auth_github_secret" {
+  description = "GitHub OAuth App Client Secret — github.com/settings/developers"
+  type        = string
+  sensitive   = true
+}

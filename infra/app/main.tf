@@ -72,5 +72,23 @@ resource "vercel_project_environment_variables" "mde" {
       target    = ["production", "preview"]
       sensitive = true
     },
+    {
+      key       = "AUTH_SECRET"
+      value     = var.auth_secret
+      target    = ["production", "preview"]
+      sensitive = true
+    },
+    {
+      key       = "AUTH_GITHUB_ID"
+      value     = var.auth_github_id
+      target    = ["production", "preview"]
+      sensitive = true
+    },
+    {
+      key       = "AUTH_GITHUB_SECRET"
+      value     = var.auth_github_secret
+      target    = ["production", "preview"]
+      sensitive = true
+    },
   ]
 }

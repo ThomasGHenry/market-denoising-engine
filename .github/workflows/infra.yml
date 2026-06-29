@@ -44,6 +44,9 @@ jobs:
         env:
           TF_VAR_vercel_token: ${{ secrets.TF_VAR_vercel_token }}
           TF_VAR_neon_api_key: ${{ secrets.TF_VAR_neon_api_key }}
+          TF_VAR_auth_secret: ${{ secrets.TF_VAR_auth_secret }}
+          TF_VAR_auth_github_id: ${{ secrets.TF_VAR_auth_github_id }}
+          TF_VAR_auth_github_secret: ${{ secrets.TF_VAR_auth_github_secret }}
 
       - name: Post plan comment
         env:
@@ -84,3 +87,6 @@ jobs:
         env:
           TF_VAR_vercel_token: ${{ secrets.TF_VAR_vercel_token }}
           TF_VAR_neon_api_key: ${{ secrets.TF_VAR_neon_api_key }}
+          TF_VAR_auth_secret: ${{ secrets.TF_VAR_auth_secret }}
+          TF_VAR_auth_github_id: ${{ secrets.TF_VAR_auth_github_id }}
+          TF_VAR_auth_github_secret: ${{ secrets.TF_VAR_auth_github_secret }}
