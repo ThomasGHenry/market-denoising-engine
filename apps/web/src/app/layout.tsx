@@ -1,15 +1,12 @@
 import type { ReactNode } from 'react';
-import { AppShell } from '@template/ui';
 import './globals.css';
 
-export const metadata = { title: 'tgh-template', description: 'Template application' };
+export const metadata = { title: 'MDE', description: 'Market Denoising Engine' };
 
 export default function RootLayout({ children }: { children: ReactNode }) {
   return (
     <html lang="en">
-      <body>
-        <AppShell>{children}</AppShell>
-      </body>
+      <body>{children}</body>
     </html>
   );
 }
