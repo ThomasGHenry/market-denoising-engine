@@ -2,9 +2,14 @@ import NextAuth, { type NextAuthResult } from 'next-auth'
 import GitHub from 'next-auth/providers/github'
 
 const ALLOWED_LOGIN = 'ThomasGHenry'
+const ALLOWED_EMAIL = 'thomasghenry@gmail.com'
 
 export function isAllowedLogin(login: string): boolean {
   return login === ALLOWED_LOGIN
+}
+
+export function isAllowedEmail(email: string): boolean {
+  return email === ALLOWED_EMAIL
 }
 
 function isAuthorized({ auth }: { auth: { user?: { login?: string } } | null }): boolean {
