@@ -10,7 +10,7 @@ terraform {
       version = "~> 5.0"
     }
     resend = {
-      source  = "armaaar/resend"
+      source  = "registry.terraform.io/armaaar/resend"
       version = "~> 1.0"
     }
     dreamhost = {
