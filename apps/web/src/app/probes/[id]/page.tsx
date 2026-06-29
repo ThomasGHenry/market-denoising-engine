@@ -9,6 +9,8 @@ import SignalReviewList from './signal-reviews/SignalReviewList'
 import SignalReviewForm from './signal-reviews/SignalReviewForm'
 import MutationForm from './MutationForm'
 
+export const dynamic = 'force-dynamic'
+
 interface PageProps {
   params: Promise<{ id: string }>
 }

@@ -3,6 +3,8 @@ import { prisma } from '@template/db'
 import MetricSnapshotList from './metric-snapshots/MetricSnapshotList'
 import MetricSnapshotForm from './metric-snapshots/MetricSnapshotForm'
 
+export const dynamic = 'force-dynamic'
+
 interface PageProps {
   params: Promise<{ id: string }>
 }

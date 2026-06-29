@@ -114,7 +114,7 @@ describe('loadDashboardData', function () {
       .mockResolvedValueOnce([])
     vi.mocked(computeProbesFitness).mockResolvedValue([])
 
-    const result = await loadDashboardData()
+    await loadDashboardData()
 
     const call = mockFind.mock.calls[0]![0] as { where: { OR: unknown[] } }
     const orClause = call.where.OR[1] as { platformPosts: { some: unknown } }

@@ -2,6 +2,8 @@ import React from 'react'
 import Link from 'next/link'
 import { listMutations } from './actions'
 
+export const dynamic = 'force-dynamic'
+
 export default async function MutationsPage() {
   const mutations = await listMutations()
 
