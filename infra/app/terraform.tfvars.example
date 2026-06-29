@@ -1,0 +1,8 @@
+# Copy to terraform.tfvars and fill in values from Bitwarden.
+# terraform.tfvars is gitignored — never commit it.
+
+# bw get password thomasghenry-vercel-token
+vercel_token = ""
+
+# bw get password buenvecino-neon-api-key
+neon_api_key = ""
