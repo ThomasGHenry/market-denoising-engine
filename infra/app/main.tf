@@ -62,13 +62,13 @@ resource "vercel_project_environment_variables" "mde" {
     {
       key       = "DATABASE_URL"
       value     = local.database_url
-      target    = ["production", "preview", "development"]
+      target    = ["production", "preview"]
       sensitive = true
     },
     {
       key       = "DATABASE_URL_UNPOOLED"
       value     = neon_project.mde.connection_uri
-      target    = ["production", "preview", "development"]
+      target    = ["production", "preview"]
       sensitive = true
     },
   ]
