@@ -51,21 +51,33 @@ The `infra/app/` module is not wired into `infra.yml`. It is applied manually on
 provision and on deliberate infrastructure changes. Drift detection is out of scope for
 a solo-operator system.
 
-Bootstrap variables (`vercel_token`, `neon_api_key`) are supplied via
-`infra/app/terraform.tfvars`, which is gitignored. Values are sourced from Bitwarden.
+Bootstrap variables (`vercel_token`, `neon_api_key`) are supplied via GitHub Actions
+secrets (`TF_VAR_vercel_token`, `TF_VAR_neon_api_key`). OpenTofu reads `TF_VAR_*`
+environment variables automatically. Locally, values are sourced from Bitwarden and
+exported before running `tofu plan` or `tofu apply`.
+
+Both `infra/github/` and `infra/app/` store state in a Cloudflare R2 bucket
+(`mde-tofu-state`) via the OpenTofu `s3` backend. R2 implements the S3 protocol, so
+the `s3` backend works against R2 with no AWS account involved. The env vars
+`AWS_ACCESS_KEY_ID` and `AWS_SECRET_ACCESS_KEY` are S3-backend conventions; they hold
+the R2 access key ID and secret, not AWS credentials. The endpoint is overridden to
+`https://f6c1744bbffb823f40e0e8abc9555cf2.r2.cloudflarestorage.com`. State paths:
+`github/terraform.tfstate` and `app/terraform.tfstate`. R2 credentials are stored in
+Bitwarden as `mde-r2-tofu-state` and set as GitHub secrets `CF_R2_ACCESS_KEY_ID` and
+`CF_R2_SECRET_ACCESS_KEY`.
+
+`infra.yml` runs `tofu apply -auto-approve` for both modules on every push to main that
+touches `infra/**`. Plan output is posted as a PR comment on pull requests.
 
 ## Consequences
 
-Provisioning is auditable (code review), repeatable (anyone with BW access can apply),
-and documented (this ADR + the module itself). A second environment requires only a new
-`terraform.tfvars` with different credentials.
+Provisioning is auditable (code review), repeatable (CI applies on merge), and
+documented (this ADR + the module itself). All credentials flow through GitHub secrets;
+no local credential files are required to deploy.
 
-Tofu state for `infra/app/` is stored locally (`.terraform/` gitignored) on first use.
-Remote state backend is deferred — acceptable for a solo-operator project where a single
-applier is the norm.
+GitHub secrets (`VERCEL_PREVIEW_URL`, `VERCEL_TOKEN`, `DATABASE_URL_PROD`) remain
+outside Tofu state to avoid plaintext secrets in state files. These require a manual
+step after any `tofu apply` that changes output values.
 
-GitHub secrets remain outside Tofu state, which avoids plaintext secrets in state files
-but requires a manual step after every `tofu apply` that changes output values.
-
-The `infra/app/` module is intentionally not auto-applied in CI. Infrastructure changes
-are infrequent and consequential enough to warrant deliberate human invocation.
+Infrastructure changes are applied automatically on merge to main. This is intentional:
+the same discipline applied to application code applies to infrastructure.

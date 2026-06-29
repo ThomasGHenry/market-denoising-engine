@@ -15,15 +15,16 @@ provider "github" {
 
 resource "github_repository" "repo" {
   name        = var.repo_name
-  description = "Greenfield project template — governance baseline + nextjs-vercel-prisma overlay"
+  description = "Market Denoising Engine — content-analytics learning loop"
   visibility  = "public"
 
-  is_template            = true
-  allow_squash_merge     = true
-  allow_merge_commit     = false
-  allow_rebase_merge     = false
-  squash_merge_commit_message = "BLANK"
-  delete_branch_on_merge = true
+  is_template                  = false
+  allow_squash_merge           = true
+  allow_merge_commit           = false
+  allow_rebase_merge           = false
+  squash_merge_commit_title    = "PR_TITLE"
+  squash_merge_commit_message  = "BLANK"
+  delete_branch_on_merge       = true
   allow_auto_merge       = true
   has_issues             = true
   has_projects           = false

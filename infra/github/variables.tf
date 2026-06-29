@@ -7,7 +7,7 @@ variable "github_token" {
 variable "repo_name" {
   description = "Repository name"
   type        = string
-  default     = "tgh-template"
+  default     = "market-denoising-engine"
 }
 
 variable "repo_owner" {
