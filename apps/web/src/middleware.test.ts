@@ -1,4 +1,5 @@
 import { describe, it, expect, vi } from 'vitest'
+import { config } from './middleware'
 
 vi.mock('./lib/auth', () => ({
   auth: vi.fn(),
@@ -7,8 +8,6 @@ vi.mock('./lib/auth', () => ({
   signIn: vi.fn(),
   signOut: vi.fn(),
 }))
-
-import { config } from './middleware'
 
 describe('middleware config', function () {
   it('exports a matcher array', function () {

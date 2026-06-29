@@ -1,4 +1,5 @@
 import { describe, it, expect, vi } from 'vitest'
+import { isAllowedLogin } from './auth'
 
 vi.mock('next-auth', () => ({
   default: vi.fn(() => ({
@@ -12,8 +13,6 @@ vi.mock('next-auth', () => ({
 vi.mock('next-auth/providers/github', () => ({
   default: vi.fn(),
 }))
-
-import { isAllowedLogin } from './auth'
 
 describe('isAllowedLogin', function () {
   it('permits ThomasGHenry', function () {

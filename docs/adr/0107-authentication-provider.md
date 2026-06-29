@@ -1,5 +1,5 @@
 ---
-status: proposed
+status: accepted
 date: 2026-06-29
 tags: [security, authentication, infrastructure]
 ---
@@ -22,6 +22,10 @@ cannot be reviewed, and require manual re-creation if revoked.
 
 This ADR evaluates whether a different provider closes that gap and records the decision.
 
+A secondary question was raised during evaluation: is GitHub OAuth the right mechanism at
+all for a solo-operator tool, or does a **magic link** (passwordless email) approach serve
+the use case better?
+
 ### Provider survey (conducted 2026-06-29)
 
 Research queried Terraform Registry, provider changelogs, Auth.js docs, and provider
@@ -37,12 +41,52 @@ client via IaC with no web-UI steps? (2) Does Auth.js v5 ship a built-in provide
 | **Keycloak** | Official (Keycloak-maintained) | Yes — `keycloak_openid_client` with `access_type = "CONFIDENTIAL"`; `client_secret_wo` write-only arg avoids state exposure | `keycloak/keycloak` | v5.8.0 — 2026-06-05 |
 | **Clerk** | Community only | Partial — manages app settings; no resource for `client_id`/`client_secret` creation | `buildwithdeck/clerk` | Low activity |
 | **WorkOS** | Community (`osodevops/workos`) | No — manages users/orgs/roles; no OAuth client resource | `osodevops/workos` | v2.3.1 — 2026-06-12 |
-| **Supabase** | Official (`supabase/supabase`) | No — `supabase_settings` configures existing providers; cannot create OAuth credentials | `supabase/supabase` | v1.9.1 — 2026-05-15 |
+| **Supabase** | Official (`supabase/supabase`) | Partial — `supabase_settings` auth block accepts `external_github_enabled`, `external_github_client_id`, `external_github_secret` via `jsonencode()`; configures Supabase to use existing credentials but cannot create the underlying GitHub OAuth App | `supabase/supabase` | v1.9.1 — 2026-05-15 |
+| **Firebase Auth** | `hashicorp/google` (Identity Platform) | Partial — `google_identity_platform_default_supported_idp_config` with `idp_id = "github.com"` takes `client_id` + `client_secret` as required args; full IDP config via Terraform but cannot create the underlying GitHub OAuth App; requires Blaze plan | `hashicorp/google` | active |
 | **GitHub OAuth** | `integrations/github` | **No** — definitively no `github_oauth_app` resource; confirmed by provider docs and open issues | N/A | N/A |
 | **Google OAuth** | `hashicorp/google` | **No** — `google_iap_client` shut down 2026-03-19; `google_iam_oauth_client` targets Workforce Identity Federation only; standard OAuth client IDs remain UI-only | N/A | [issue #16452](https://github.com/hashicorp/terraform-provider-google/issues/16452) |
 
 Auth.js v5 built-in providers: Zitadel ✓, Auth0 ✓, Okta ✓, Keycloak ✓, GitHub ✓,
 Google ✓. Clerk and WorkOS require custom OIDC configuration.
+
+### Magic link (passwordless email) analysis
+
+Auth.js v5 ships an `Email` provider (`next-auth/providers/nodemailer`) that sends a
+one-time sign-in link. Resend (`resend/resend`) is the recommended SMTP transport:
+developer-tier is free, delivers via REST API (no SMTP daemon), and supplies an API key
+as a single env var.
+
+**Implementation surface** (vs GitHub OAuth):
+
+| Concern | GitHub OAuth | Magic link (Resend) |
+|---|---|---|
+| External service account | GitHub OAuth App (web-UI only) | Resend account + API key |
+| IaC-provisioned? | No | No — API key creation is web-UI only on Resend |
+| Credentials in IaC state | No | No |
+| Secrets required | `AUTH_GITHUB_ID`, `AUTH_GITHUB_SECRET`, `AUTH_SECRET` | `AUTH_RESEND_KEY`, `AUTH_SECRET` |
+| Operator allowlist | `profile.login === 'ThomasGHenry'` | `email === 'thomasghenry@gmail.com'` |
+| Auth.js provider | `GithubProvider` | `EmailProvider` + Resend transport |
+| Database adapter required? | No (JWT session) | **Yes** — magic link tokens must persist between email send and link click |
+| Prisma schema change | None | `VerificationToken` model (Auth.js adapter adds this) |
+| User experience | One OAuth redirect | Email arrives, user clicks link |
+
+**Key tradeoff:** Magic link requires a database-backed Auth.js adapter because the
+one-time token must survive between the POST that sends the email and the GET when the
+user clicks the link — JWT sessions cannot span that gap. Auth.js ships
+`@auth/prisma-adapter` which adds `Account`, `Session`, `User`, and `VerificationToken`
+tables via a Prisma migration. The pgbouncer pooled URL is incompatible with Prisma
+adapter connections; `DATABASE_URL_UNPOOLED` must be used for the adapter at runtime (not
+just migration time).
+
+**Complexity comparison:** Magic link removes the OAuth App registration (one web-UI
+step eliminated) but adds a Prisma adapter, schema migration, and a runtime database
+connection for every session check. For a solo-operator tool with infrequent logins the
+database overhead is negligible, but it is a net increase in moving parts vs the current
+JWT-only GitHub OAuth implementation.
+
+**IaC gap equivalence:** Both GitHub OAuth and Resend require one web-UI credential
+creation step. Neither closes the IaC gap identified in the Context section. The gap is
+inherent to the solo-operator use case where full IaC is unnecessary overhead.
 
 ### Zitadel vs Auth0
 
@@ -62,31 +106,34 @@ self-hosted or managed instance. Both are ruled out.
 
 ## Decision
 
-**Defer migration from GitHub OAuth to Zitadel.** The current GitHub OAuth implementation
-(Auth.js v5, `middleware.ts`, `src/lib/auth.ts`) satisfies the functional requirement
-and is deployed. The IaC gap is real but low risk for a solo-operator tool: the OAuth App
-is created once, credentials are stored in Bitwarden, and revocation is an unlikely event
-managed manually.
+**Do not implement magic link. Keep GitHub OAuth as the sole authentication mechanism.**
 
-When the GitHub OAuth App credentials next need rotation or a second environment
-(staging, contributor fork) is provisioned, migrate to **Zitadel** as the preferred
-provider. Zitadel's `zitadel_application_oidc` resource provides a complete IaC path
-with no secondary resources or extra scopes; the Auth.js built-in provider and official
-Next.js example reduce migration friction.
+Magic link adds a Prisma database adapter (`@auth/prisma-adapter`), four new database
+tables (`Account`, `Session`, `User`, `VerificationToken`), and a runtime connection to
+the unpooled database URL on every session check — in exchange for removing one web-UI
+step (OAuth App registration) that was already completed. The IaC gap is identical
+between the two options; magic link does not close it.
 
-Auth0 is the fallback if Zitadel Cloud availability or pricing changes.
+For a solo-operator tool where the operator already has GitHub, the OAuth flow is one
+click. Magic link adds email delivery latency and an inbox check for no security or
+operational benefit over the current implementation.
 
-If migration is pursued: add `zitadel/zitadel` to `infra/app/main.tf`, provision a
-`zitadel_project` and `zitadel_application_oidc`, wire `client_id` and `client_secret`
-outputs into `vercel_project_environment_variables`, and swap `GithubProvider` for
-`ZitadelProvider` in `apps/web/src/lib/auth.ts`.
+The current GitHub OAuth implementation (Auth.js v5, `middleware.ts`,
+`apps/web/src/lib/auth.ts`) is deployed and satisfies issue #25. No migration is
+warranted.
+
+**Zitadel remains the documented migration target** if a second environment
+(staging, contributor fork) is provisioned or credentials need rotation under IaC
+control. Zitadel's `zitadel_application_oidc` provides a complete IaC path;
+Auth.js ships a built-in `ZitadelProvider`. Auth0 is the fallback if Zitadel Cloud
+pricing or availability changes.
 
 ## Consequences
 
-The current GitHub OAuth implementation ships as-is. Two credentials (`AUTH_GITHUB_ID`,
-`AUTH_GITHUB_SECRET`) live outside Tofu state, stored in Bitwarden and supplied via
-`TF_VAR_*` GitHub Actions secrets. `AUTH_SECRET` is also outside state; it is generated
-with `openssl rand -hex 32` and stored in Bitwarden.
+GitHub OAuth credentials (`AUTH_GITHUB_ID`, `AUTH_GITHUB_SECRET`) live outside Tofu
+state, stored in Bitwarden and supplied via `TF_VAR_*` GitHub Actions secrets.
+`AUTH_SECRET` is generated with `openssl rand -hex 32` and stored in Bitwarden.
 
-Zitadel is the documented migration target when full IaC provisioning becomes necessary.
-No action required until then.
+Magic link (Resend) is documented as **rejected** for the solo-operator use case: it adds
+a database adapter and schema migration without closing the IaC gap or improving UX for
+an operator who is already authenticated with GitHub in their browser.
