@@ -58,6 +58,9 @@ resource "github_repository_ruleset" "main_protection" {
       required_check {
         context = "Commit Validation"
       }
+      required_check {
+        context = "Vercel"
+      }
     }
 
     pull_request {
