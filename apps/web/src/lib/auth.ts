@@ -5,12 +5,9 @@ import { PrismaAdapter } from '@auth/prisma-adapter'
 import { PrismaClient } from '@prisma/client'
 import { PrismaPg } from '@prisma/adapter-pg'
 import type { Provider } from '@auth/core/providers'
+import { authConfig, isAllowedEmail } from './auth.config'
 
-const ALLOWED_EMAIL = 'thomasghenry@gmail.com'
-
-export function isAllowedEmail(email: string): boolean {
-  return email === ALLOWED_EMAIL
-}
+export { isAllowedEmail }
 
 function buildAuthPrismaClient(): PrismaClient {
   const url = process.env.DATABASE_URL_UNPOOLED ?? process.env.DATABASE_URL ?? ''
@@ -27,22 +24,10 @@ function buildProviders(): Provider[] {
   return providers
 }
 
-function isAuthorized(session: { user?: { email?: string | null } } | null): boolean {
-  const email = session?.user?.email
-  if (!email) return false
-  return isAllowedEmail(email)
-}
-
 const nextAuth: NextAuthResult = NextAuth({
+  ...authConfig,
   adapter: PrismaAdapter(buildAuthPrismaClient()),
   providers: buildProviders(),
-  session: { strategy: 'jwt' },
-  pages: { signIn: '/login' },
-  callbacks: {
-    authorized: function authorizedCallback({ auth: session }) {
-      return isAuthorized(session as { user?: { email?: string | null } } | null)
-    },
-  },
 })
 
 export const handlers: NextAuthResult['handlers'] = nextAuth.handlers
