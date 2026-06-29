@@ -46,17 +46,23 @@ jobs:
           TF_VAR_neon_api_key: ${{ secrets.TF_VAR_neon_api_key }}
 
       - name: Post plan comment
-        run: |
-          gh pr comment ${{ github.event.number }} --body "## Tofu Plan — infra/github
-          \`\`\`
-          ${{ steps.plan-github.outputs.stdout }}
-          \`\`\`
-          ## Tofu Plan — infra/app
-          \`\`\`
-          ${{ steps.plan-app.outputs.stdout }}
-          \`\`\`"
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PR_NUMBER: ${{ github.event.number }}
+          PLAN_GITHUB: ${{ steps.plan-github.outputs.stdout }}
+          PLAN_APP: ${{ steps.plan-app.outputs.stdout }}
+        run: |
+          {
+            echo "## Tofu Plan — infra/github"
+            echo '```'
+            echo "$PLAN_GITHUB"
+            echo '```'
+            echo "## Tofu Plan — infra/app"
+            echo '```'
+            echo "$PLAN_APP"
+            echo '```'
+          } > /tmp/plan-comment.md
+          gh pr comment "$PR_NUMBER" --body-file /tmp/plan-comment.md
 
   apply:
     if: github.event_name == 'push'
