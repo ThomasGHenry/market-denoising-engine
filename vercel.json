@@ -1,4 +1,0 @@
-{
-  "buildCommand": "prisma generate --config packages/db/prisma.config.ts && npx nx run web:build",
-  "outputDirectory": "apps/web/.next"
-}
