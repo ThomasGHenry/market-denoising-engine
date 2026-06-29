@@ -2,6 +2,7 @@
 
 import React from 'react'
 import { useActionState } from 'react'
+import { Button } from '@template/ui'
 import { MutationType } from '@template/domain'
 import { createMutation } from '../../mutations/actions'
 
@@ -28,9 +29,9 @@ export default function MutationForm({ probeId }: MutationFormProps) {
       <label htmlFor="description">Description</label>
       <textarea id="description" name="description" required />
 
-      <button type="submit" disabled={isPending}>
+      <Button type="submit" disabled={isPending}>
         Create Mutation
-      </button>
+      </Button>
     </form>
   )
 }

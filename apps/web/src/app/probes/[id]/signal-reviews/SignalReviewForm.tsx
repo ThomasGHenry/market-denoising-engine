@@ -2,6 +2,7 @@
 
 import React from 'react'
 import { useActionState } from 'react'
+import { Button } from '@template/ui'
 import { SignalStrength, Confidence } from '@template/domain'
 import { createSignalReview } from './actions'
 
@@ -42,9 +43,9 @@ export default function SignalReviewForm({ probeId }: SignalReviewFormProps) {
       <label htmlFor="decision">Decision</label>
       <textarea id="decision" name="decision" />
 
-      <button type="submit" disabled={isPending}>
+      <Button type="submit" disabled={isPending}>
         {isPending ? 'Saving...' : 'Add Review'}
-      </button>
+      </Button>
     </form>
   )
 }

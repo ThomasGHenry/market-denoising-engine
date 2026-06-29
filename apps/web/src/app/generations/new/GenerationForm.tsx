@@ -1,6 +1,7 @@
 'use client'
 
 import { useActionState } from 'react'
+import { Button } from '@template/ui'
 import { createGeneration } from '../actions'
 
 interface ParentOption {
@@ -79,13 +80,9 @@ export default function GenerationForm({ parents }: GenerationFormProps) {
           </select>
         </div>
       )}
-      <button
-        type="submit"
-        disabled={isPending}
-        className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 disabled:opacity-50"
-      >
+      <Button type="submit" disabled={isPending}>
         {isPending ? 'Creating...' : 'Create Generation'}
-      </button>
+      </Button>
     </form>
   )
 }

@@ -1,6 +1,7 @@
 'use client'
 
 import { useTransition } from 'react'
+import { Button } from '@template/ui'
 import { updateProbeStatus } from '../actions'
 
 interface ProbeStatusControlsProps {
@@ -50,12 +51,17 @@ export default function ProbeStatusControls({ id, status, generationId }: ProbeS
   }
 
   return (
-    <div>
+    <div className="flex gap-2">
       {buttons.map(function (btn) {
         return (
-          <button key={btn.nextStatus} onClick={function () { handleClick(btn.nextStatus) }} disabled={isPending}>
+          <Button
+            key={btn.nextStatus}
+            variant="outline"
+            onClick={function () { handleClick(btn.nextStatus) }}
+            disabled={isPending}
+          >
             {btn.label}
-          </button>
+          </Button>
         )
       })}
     </div>

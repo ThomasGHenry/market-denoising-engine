@@ -1,5 +1,6 @@
 import React from 'react'
 import { loadDashboardData } from './loadDashboardData'
+import { PageHeader } from '@template/ui'
 import type { ProbeWithFitness } from '../generations/[id]/computeProbesFitness'
 
 export const dynamic = 'force-dynamic'
@@ -8,14 +9,14 @@ export default async function DashboardPage() {
   const data = await loadDashboardData()
 
   return (
-    <main>
-      <h1>Dashboard</h1>
+    <div>
+      <PageHeader title="Dashboard" />
       <ActiveGenerationCard generation={data.activeGeneration} />
       <FitnessRankingCard probes={data.rankedProbes} />
       <OpenMutationsCard count={data.openMutationCount} />
       <NeedsMetricsCard probes={data.needsMetricsProbes} />
       <NeedsReviewCard probes={data.needsReviewProbes} />
-    </main>
+    </div>
   )
 }
 

@@ -1,6 +1,7 @@
 import { prisma } from '@template/db'
 import { notFound } from 'next/navigation'
 import Link from 'next/link'
+import { PageHeader, Button, StatusBadge } from '@template/ui'
 import StatusControls from './StatusControls'
 import { computeProbesFitness } from './computeProbesFitness'
 
@@ -33,18 +34,13 @@ export default async function GenerationDetailPage({ params }: PageProps) {
   }
 
   return (
-    <div className="p-8">
-      <div className="flex justify-between items-start mb-6">
-        <div>
-          <h1 className="text-2xl font-bold">{generation.title}</h1>
-          <p className="text-gray-500 mt-1">{generation.theme ?? '—'}</p>
-        </div>
-        <StatusControls id={generation.id} status={generation.status} />
-      </div>
+    <div>
+      <PageHeader title={generation.title} action={<StatusControls id={generation.id} status={generation.status} />} />
+      <p className="text-gray-500 mb-4">{generation.theme ?? '—'}</p>
 
       <dl className="grid grid-cols-2 gap-4 mb-8 max-w-lg">
         <dt className="font-medium">Status</dt>
-        <dd>{generation.status}</dd>
+        <dd><StatusBadge status={generation.status} /></dd>
         <dt className="font-medium">Fitness Function</dt>
         <dd>{generation.fitnessFunction}</dd>
         <dt className="font-medium">Created</dt>
@@ -62,11 +58,8 @@ export default async function GenerationDetailPage({ params }: PageProps) {
       </dl>
 
       <div className="mb-6">
-        <Link
-          href={`/generations/new?parentId=${generation.id}`}
-          className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
-        >
-          Create Next Generation
+        <Link href={`/generations/new?parentId=${generation.id}`}>
+          <Button type="button">Create Next Generation</Button>
         </Link>
       </div>
 
@@ -96,7 +89,7 @@ export default async function GenerationDetailPage({ params }: PageProps) {
                     </Link>
                   </td>
                   <td className="py-2 pr-4">{probe.format}</td>
-                  <td className="py-2 pr-4">{probe.status}</td>
+                  <td className="py-2 pr-4"><StatusBadge status={probe.status} /></td>
                   <td className="py-2">
                     {probe.fitnessResult.rawScore.toFixed(2)}
                     {probe.fitnessResult.scorePerEffortMinute !== null && (

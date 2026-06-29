@@ -1,5 +1,7 @@
 import { notFound } from 'next/navigation'
+import Link from 'next/link'
 import { prisma } from '@template/db'
+import { PageHeader } from '@template/ui'
 import MetricSnapshotList from './metric-snapshots/MetricSnapshotList'
 import MetricSnapshotForm from './metric-snapshots/MetricSnapshotForm'
 
@@ -15,15 +17,20 @@ export default async function PlatformPostDetailPage({ params }: PageProps) {
   if (!post) notFound()
 
   return (
-    <main>
-      <h1>{post.url}</h1>
-      <p>Probe: {post.probe.title}</p>
+    <div>
+      <PageHeader title={post.platform} />
+      <p className="text-sm text-gray-500 mb-4">
+        <Link href={`/probes/${post.probe.id}`} className="hover:underline">
+          ← {post.probe.title}
+        </Link>
+      </p>
+      <p className="mb-4">{post.url}</p>
       <section>
         <h2>Metric Snapshots</h2>
         <MetricSnapshotList snapshots={post.snapshots} />
         <MetricSnapshotForm platformPostId={id} />
       </section>
-    </main>
+    </div>
   )
 }
 

@@ -1,4 +1,12 @@
 {
   "name": "ui",
-  "tags": ["scope:web"]
+  "tags": ["scope:web"],
+  "targets": {
+    "test": {
+      "executor": "nx:run-script",
+      "options": {
+        "script": "test"
+      }
+    }
+  }
 }

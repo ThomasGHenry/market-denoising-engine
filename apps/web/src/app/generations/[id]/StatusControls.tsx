@@ -1,6 +1,7 @@
 'use client'
 
 import { useTransition } from 'react'
+import { Button } from '@template/ui'
 import { updateGenerationStatus } from '../actions'
 
 interface StatusControlsProps {
@@ -19,33 +20,31 @@ export default function StatusControls({ id, status }: StatusControlsProps) {
 
   if (status === 'DRAFT') {
     return (
-      <button
+      <Button
         onClick={function () { handleTransition('ACTIVE') }}
         disabled={isPending}
-        className="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700 disabled:opacity-50"
       >
         Activate
-      </button>
+      </Button>
     )
   }
 
   if (status === 'ACTIVE') {
     return (
       <div className="flex gap-2">
-        <button
+        <Button
           onClick={function () { handleTransition('PUBLISHED') }}
           disabled={isPending}
-          className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 disabled:opacity-50"
         >
           Publish
-        </button>
-        <button
+        </Button>
+        <Button
+          variant="outline"
           onClick={function () { handleTransition('RETIRED') }}
           disabled={isPending}
-          className="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700 disabled:opacity-50"
         >
           Retire
-        </button>
+        </Button>
       </div>
     )
   }
@@ -53,20 +52,19 @@ export default function StatusControls({ id, status }: StatusControlsProps) {
   if (status === 'PUBLISHED') {
     return (
       <div className="flex gap-2">
-        <button
+        <Button
           onClick={function () { handleTransition('REVIEWED') }}
           disabled={isPending}
-          className="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700 disabled:opacity-50"
         >
           Mark Reviewed
-        </button>
-        <button
+        </Button>
+        <Button
+          variant="outline"
           onClick={function () { handleTransition('RETIRED') }}
           disabled={isPending}
-          className="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700 disabled:opacity-50"
         >
           Retire
-        </button>
+        </Button>
       </div>
     )
   }

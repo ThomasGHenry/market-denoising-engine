@@ -1,5 +1,6 @@
 import { prisma } from '@template/db'
 import Link from 'next/link'
+import { PageHeader, Button, StatusBadge } from '@template/ui'
 
 export const dynamic = 'force-dynamic'
 
@@ -20,37 +21,29 @@ function computeTopFitness(scores: Array<{ fitnessScore: number | null }>): numb
   return Math.max(...valid)
 }
 
+function CreateGenerationButton() {
+  return (
+    <Link href="/generations/new">
+      <Button type="button">Create Generation</Button>
+    </Link>
+  )
+}
+
 export default async function GenerationsPage() {
   const generations = await loadGenerationsWithStats()
 
   if (generations.length === 0) {
     return (
-      <div className="p-8">
-        <div className="flex justify-between items-center mb-6">
-          <h1 className="text-2xl font-bold">Generations</h1>
-          <Link
-            href="/generations/new"
-            className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
-          >
-            Create Generation
-          </Link>
-        </div>
+      <div>
+        <PageHeader title="Generations" action={<CreateGenerationButton />} />
         <p className="text-gray-500">No generations yet.</p>
       </div>
     )
   }
 
   return (
-    <div className="p-8">
-      <div className="flex justify-between items-center mb-6">
-        <h1 className="text-2xl font-bold">Generations</h1>
-        <Link
-          href="/generations/new"
-          className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
-        >
-          Create Generation
-        </Link>
-      </div>
+    <div>
+      <PageHeader title="Generations" action={<CreateGenerationButton />} />
       <table className="w-full border-collapse">
         <thead>
           <tr className="border-b">
@@ -72,7 +65,7 @@ export default async function GenerationsPage() {
                     {gen.title}
                   </Link>
                 </td>
-                <td className="py-2 pr-4">{gen.status}</td>
+                <td className="py-2 pr-4"><StatusBadge status={gen.status} /></td>
                 <td className="py-2 pr-4">{gen.theme ?? '—'}</td>
                 <td className="py-2 pr-4">{gen.probes.length}</td>
                 <td className="py-2 pr-4">{topFitness !== null ? topFitness.toFixed(2) : '—'}</td>

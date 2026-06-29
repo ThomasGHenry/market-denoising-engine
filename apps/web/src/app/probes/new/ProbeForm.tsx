@@ -1,6 +1,7 @@
 'use client'
 
 import { useActionState } from 'react'
+import { Button } from '@template/ui'
 import { createProbe } from '../actions'
 import { Format } from '@template/domain'
 
@@ -55,9 +56,9 @@ export default function ProbeForm({ generations, defaultGenerationId, parentProb
         })}
       </select>
 
-      <button type="submit" disabled={isPending}>
+      <Button type="submit" disabled={isPending}>
         {isPending ? 'Creating...' : 'Create Probe'}
-      </button>
+      </Button>
     </form>
   )
 }
