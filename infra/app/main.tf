@@ -46,8 +46,7 @@ locals {
 }
 
 resource "vercel_project" "mde" {
-  name      = var.project_name
-  framework = "nextjs"
+  name = var.project_name
 
   git_repository = {
     type = "github"
