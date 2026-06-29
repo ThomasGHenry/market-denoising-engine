@@ -71,6 +71,7 @@ is_merge_commit() {
   local subject="$1"
   [[ "$subject" =~ ^Merge\ pull\ request\ \#[0-9]+ ]] && return 0
   [[ "$subject" =~ ^Merge\ branch\ \' ]] && return 0
+  [[ "$subject" =~ ^Merge\ [0-9a-f]{40}\ into\ [0-9a-f]{40}$ ]] && return 0
   return 1
 }
 
