@@ -67,8 +67,9 @@ as a single env var.
 | Operator allowlist | `profile.login === 'ThomasGHenry'` | `email === 'thomasghenry@gmail.com'` |
 | Auth.js provider | `GithubProvider` | `EmailProvider` + Resend transport |
 | Database adapter required? | No (JWT session) | **Yes** — magic link tokens must persist between email send and link click |
-| Prisma schema change | None | `VerificationToken` model (Auth.js adapter adds this) |
+| Prisma schema change | None | `Account`, `Session`, `User`, `VerificationToken` tables |
 | User experience | One OAuth redirect | Email arrives, user clicks link |
+| Multi-environment callback | Third-party provider; one registered URL allowed | Own server; callback URL is always `{AUTH_URL}/api/auth/callback/email` |
 
 **Key tradeoff:** Magic link requires a database-backed Auth.js adapter because the
 one-time token must survive between the POST that sends the email and the GET when the
@@ -78,15 +79,32 @@ tables via a Prisma migration. The pgbouncer pooled URL is incompatible with Pri
 adapter connections; `DATABASE_URL_UNPOOLED` must be used for the adapter at runtime (not
 just migration time).
 
-**Complexity comparison:** Magic link removes the OAuth App registration (one web-UI
-step eliminated) but adds a Prisma adapter, schema migration, and a runtime database
-connection for every session check. For a solo-operator tool with infrequent logins the
-database overhead is negligible, but it is a net increase in moving parts vs the current
-JWT-only GitHub OAuth implementation.
-
 **IaC gap equivalence:** Both GitHub OAuth and Resend require one web-UI credential
 creation step. Neither closes the IaC gap identified in the Context section. The gap is
 inherent to the solo-operator use case where full IaC is unnecessary overhead.
+
+### Multi-environment OAuth complexity (discovered post-implementation)
+
+During implementation of the GitHub OAuth flow, a multi-environment callback URL problem
+was discovered. GitHub OAuth Apps support **one** registered callback URL. GitHub Apps
+support up to ten, but no wildcard patterns. Vercel preview deployments use ephemeral
+URLs (`https://market-denoising-engine-git-*-thomasghenry.vercel.app`) that cannot be
+pre-registered.
+
+Auth.js documents a redirect proxy pattern for this case: preview deployments set
+`AUTH_REDIRECT_PROXY_URL` to the stable production URL; the OAuth callback hits
+production, extracts the originating preview URL from the OAuth `state` parameter, and
+redirects back. This works but introduces:
+
+- `AUTH_REDIRECT_PROXY_URL` as a Vercel Preview-scoped environment variable
+- Dependency on production deployment being live when previews authenticate
+- GitHub App migration required to register localhost as a second callback URL
+- Gated Credentials provider required for E2E test auth bypass
+
+Magic link avoids this entirely. The callback URL is always
+`{AUTH_URL}/api/auth/callback/email` — hosted on the same server, constructed at
+send-time from the current deployment's base URL. Localhost, preview, and production
+are all first-class with no proxy pattern and no third-party URL registration.
 
 ### Zitadel vs Auth0
 
@@ -106,21 +124,43 @@ self-hosted or managed instance. Both are ruled out.
 
 ## Decision
 
-**Do not implement magic link. Keep GitHub OAuth as the sole authentication mechanism.**
+**Implement dual-provider authentication: Resend magic link (all environments) plus
+GitHub OAuth (production only, presence-gated).**
 
-Magic link adds a Prisma database adapter (`@auth/prisma-adapter`), four new database
-tables (`Account`, `Session`, `User`, `VerificationToken`), and a runtime connection to
-the unpooled database URL on every session check — in exchange for removing one web-UI
-step (OAuth App registration) that was already completed. The IaC gap is identical
-between the two options; magic link does not close it.
+The first evaluation of magic link concluded it was not warranted because the IaC gap was
+identical and the DB adapter cost outweighed removing one web-UI step. That analysis was
+incomplete: it did not account for the multi-environment OAuth callback complexity
+discovered during implementation (see above). The DB adapter cost is fixed and one-time;
+the OAuth multi-environment complexity is recurring operational overhead.
 
-For a solo-operator tool where the operator already has GitHub, the OAuth flow is one
-click. Magic link adds email delivery latency and an inbox check for no security or
-operational benefit over the current implementation.
+**Provider strategy:**
 
-The current GitHub OAuth implementation (Auth.js v5, `middleware.ts`,
-`apps/web/src/lib/auth.ts`) is deployed and satisfies issue #25. No migration is
-warranted.
+| Environment | GitHub OAuth | Magic link |
+|---|---|---|
+| Production | ✅ available (gated on `AUTH_GITHUB_ID` present) | ✅ available |
+| Vercel Preview | ❌ absent (`AUTH_GITHUB_ID` not set in Preview scope) | ✅ available |
+| Local dev | ❌ absent | ✅ available |
+| E2E (CI) | ❌ absent | ✅ available (token queried from DB) |
+
+Gating is achieved by presence of `AUTH_GITHUB_ID` in the environment, not by
+`NODE_ENV` or `VERCEL_ENV` checks in code:
+
+```typescript
+const providers: Provider[] = [Resend({ from: "auth@..." })]
+if (process.env.AUTH_GITHUB_ID) providers.push(GitHub)
+```
+
+`AUTH_GITHUB_ID` and `AUTH_GITHUB_SECRET` are set only in the Vercel **Production**
+environment scope. Preview and Development scopes do not have these variables.
+
+**Schema cost accepted:** `@auth/prisma-adapter` + four tables (`Account`, `Session`,
+`User`, `VerificationToken`). The unpooled `DATABASE_URL_UNPOOLED` connection is
+required for the adapter at runtime; `DATABASE_URL` (pooled) remains the default for
+all other queries. This is a Neon-specific constraint documented in their Auth.js guide.
+
+**E2E auth:** Tests POST to `/api/auth/signin/email`, then query the `VerificationToken`
+table directly to retrieve the token, and navigate to the callback URL. No Credentials
+provider required in code.
 
 **Zitadel remains the documented migration target** if a second environment
 (staging, contributor fork) is provisioned or credentials need rotation under IaC
@@ -130,10 +170,11 @@ pricing or availability changes.
 
 ## Consequences
 
-GitHub OAuth credentials (`AUTH_GITHUB_ID`, `AUTH_GITHUB_SECRET`) live outside Tofu
-state, stored in Bitwarden and supplied via `TF_VAR_*` GitHub Actions secrets.
-`AUTH_SECRET` is generated with `openssl rand -hex 32` and stored in Bitwarden.
-
-Magic link (Resend) is documented as **rejected** for the solo-operator use case: it adds
-a database adapter and schema migration without closing the IaC gap or improving UX for
-an operator who is already authenticated with GitHub in their browser.
+- `@auth/prisma-adapter` added to `packages/db` or `apps/web`
+- Prisma schema gains `Account`, `Session`, `User`, `VerificationToken` models
+- `DATABASE_URL_UNPOOLED` must be set in all environments where auth runs
+- `AUTH_RESEND_KEY` added to Bitwarden `mde-auth-secrets` and Vercel env vars
+- `AUTH_GITHUB_ID` / `AUTH_GITHUB_SECRET` set in Vercel **Production scope only**
+- GitHub OAuth App callback URL remains `https://market-denoising-engine.vercel.app/api/auth/callback/github`
+- No proxy pattern, no `AUTH_REDIRECT_PROXY_URL`, no GitHub App migration required
+- Existing PR #33 (`feat/auth-github-oauth`) to be superseded by new implementation branch
