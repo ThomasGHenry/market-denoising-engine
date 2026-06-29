@@ -1,5 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { prisma } from '@template/db'
+import { computeProbesFitness } from '../generations/[id]/computeProbesFitness'
+import { loadDashboardData } from './loadDashboardData'
 
 vi.mock('@template/db', () => ({
   prisma: {
@@ -18,9 +20,6 @@ vi.mock('@template/db', () => ({
 vi.mock('../generations/[id]/computeProbesFitness', () => ({
   computeProbesFitness: vi.fn(),
 }))
-
-import { computeProbesFitness } from '../generations/[id]/computeProbesFitness'
-import { loadDashboardData } from './loadDashboardData'
 
 beforeEach(function () {
   vi.clearAllMocks()

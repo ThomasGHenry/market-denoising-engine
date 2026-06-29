@@ -1,6 +1,8 @@
 import { describe, it, expect, vi, afterEach } from 'vitest'
 import { render, screen, cleanup } from '@testing-library/react'
 import React from 'react'
+import { loadDashboardData } from './loadDashboardData'
+import DashboardPage from './page'
 
 vi.mock('./loadDashboardData', () => ({
   loadDashboardData: vi.fn(),
@@ -11,9 +13,6 @@ vi.mock('next/link', () => ({
     return <a href={href}>{children}</a>
   },
 }))
-
-import { loadDashboardData } from './loadDashboardData'
-import DashboardPage from './page'
 
 afterEach(function () {
   cleanup()

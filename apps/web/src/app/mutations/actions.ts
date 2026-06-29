@@ -26,7 +26,7 @@ export async function createMutation(prevState: string | null, formData: FormDat
         status: MutationStatus.OPEN,
       },
     })
-  } catch (err) {
+  } catch {
     return 'Failed to create mutation'
   }
 
@@ -57,8 +57,8 @@ export async function updateMutationStatus(id: string, newStatus: string): Promi
     })
     revalidatePath('/mutations')
     revalidatePath('/probes/' + mutation.sourceProbeId)
+    return null
   } catch {
+    return null
   }
-
-  return null
 }

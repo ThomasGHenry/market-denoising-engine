@@ -1,6 +1,9 @@
 import { describe, it, expect, vi } from 'vitest'
 import { render, screen } from '@testing-library/react'
 import React from 'react'
+import { prisma } from '@template/db'
+import { notFound } from 'next/navigation'
+import ProbeDetailPage from './page'
 
 vi.mock('@template/db', () => ({
   prisma: {
@@ -55,10 +58,6 @@ vi.mock('./signal-reviews/SignalReviewForm', () => ({
     return <div data-testid="signal-review-form" />
   },
 }))
-
-import { prisma } from '@template/db'
-import { notFound } from 'next/navigation'
-import ProbeDetailPage from './page'
 
 const mockProbe = {
   id: 'probe-1',

@@ -1,6 +1,8 @@
 import { describe, it, expect, vi } from 'vitest'
 import { render, screen } from '@testing-library/react'
 import React from 'react'
+import { listMutations } from './actions'
+import MutationsPage from './page'
 
 vi.mock('./actions', () => ({
   listMutations: vi.fn(),
@@ -11,9 +13,6 @@ vi.mock('next/link', () => ({
     return <a href={href}>{children}</a>
   },
 }))
-
-import { listMutations } from './actions'
-import MutationsPage from './page'
 
 describe('MutationsPage', function () {
   it('renders empty-state message when no mutations exist', async function () {
