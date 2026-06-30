@@ -14,7 +14,7 @@ See ADR 0107 for provider decision rationale.
 
 - Logged into github.com as `ThomasGHenry` in Chrome
 - Bitwarden vault unlocked (use `mcp__bitwarden__*` tools)
-- Production Vercel URL known: `https://market-denoising-engine.vercel.app`
+- Production Vercel canonical URL: `https://market-denoising-engine-thomas-g-henry-llc.vercel.app`
 
 ## Steps
 
@@ -24,8 +24,8 @@ Navigate to: `github.com/settings/developers`
 
 Find the OAuth Apps section and create a new OAuth App with:
 - **Application name**: `market-denoising-engine`
-- **Homepage URL**: `https://market-denoising-engine.vercel.app`
-- **Authorization callback URL**: `https://market-denoising-engine.vercel.app/api/auth/callback/github`
+- **Homepage URL**: `https://market-denoising-engine-thomas-g-henry-llc.vercel.app`
+- **Authorization callback URL**: `https://market-denoising-engine-thomas-g-henry-llc.vercel.app/api/auth/callback/github`
 
 Register the application.
 
@@ -91,3 +91,14 @@ AUTH_URL=http://localhost:3000
 
 The same OAuth App covers local dev — add `http://localhost:3000/api/auth/callback/github`
 to the app's callback URL list on GitHub if not already present.
+
+## Update callback URL (existing app)
+
+When the production canonical URL changes (e.g. custom domain added, team slug changed):
+
+1. Navigate to: `github.com/settings/developers` → OAuth Apps → `market-denoising-engine`
+2. Update **Authorization callback URL** to the new canonical URL + `/api/auth/callback/github`
+3. Update `AUTH_URL` in `infra/app/main.tf` to match
+4. Update `Homepage URL` to the new canonical URL
+5. Save changes
+6. Update this runbook's Prerequisites section with the new canonical URL
