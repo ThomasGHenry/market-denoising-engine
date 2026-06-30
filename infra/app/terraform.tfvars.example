@@ -6,3 +6,10 @@ vercel_token = ""
 
 # bw get password buenvecino-neon-api-key
 neon_api_key = ""
+
+# openssl rand -hex 32
+auth_secret = ""
+
+# github.com/settings/developers → OAuth Apps → market-denoising-engine
+auth_github_id     = ""
+auth_github_secret = ""

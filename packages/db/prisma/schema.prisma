@@ -6,145 +6,195 @@ datasource db {
   provider = "postgresql"
 }
 
+model User {
+  id            String    @id @default(cuid())
+  name          String?
+  email         String    @unique
+  emailVerified DateTime?
+  image         String?
+  accounts      Account[]
+  sessions      Session[]
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+}
+
+model Account {
+  id                String   @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String?
+  access_token      String?
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String?
+  session_state     String?
+  user              User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  @@unique([provider, providerAccountId])
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+}
+
+model VerificationToken {
+  identifier String
+  token      String
+  expires    DateTime
+
+  @@unique([identifier, token])
+}
+
 model Generation {
-  id               String           @id @default(cuid())
-  title            String
-  theme            String?
-  status           GenerationStatus @default(DRAFT)
-  fitnessFunction  String           @default("default_v0")
+  id              String           @id @default(cuid())
+  title           String
+  theme           String?
+  status          GenerationStatus @default(DRAFT)
+  fitnessFunction String           @default("default_v0")
 
-  parentId         String?
-  parent           Generation?      @relation("GenerationLineage", fields: [parentId], references: [id])
-  children         Generation[]     @relation("GenerationLineage")
+  parentId String?
+  parent   Generation?  @relation("GenerationLineage", fields: [parentId], references: [id])
+  children Generation[] @relation("GenerationLineage")
 
-  probes           Probe[]
-  reviews          GenerationReview[]
+  probes  Probe[]
+  reviews GenerationReview[]
 
-  createdAt        DateTime         @default(now())
-  updatedAt        DateTime         @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
 model Probe {
-  id               String       @id @default(cuid())
+  id String @id @default(cuid())
 
-  generationId     String
-  generation       Generation   @relation(fields: [generationId], references: [id])
+  generationId String
+  generation   Generation @relation(fields: [generationId], references: [id])
 
-  parentProbeId    String?
-  parentProbe      Probe?       @relation("ProbeLineage", fields: [parentProbeId], references: [id])
-  childProbes      Probe[]      @relation("ProbeLineage")
+  parentProbeId String?
+  parentProbe   Probe?  @relation("ProbeLineage", fields: [parentProbeId], references: [id])
+  childProbes   Probe[] @relation("ProbeLineage")
 
-  title            String
-  rawInput         String
-  contentText      String?
-  format           Format
-  status           ProbeStatus  @default(DRAFT)
+  title       String
+  rawInput    String
+  contentText String?
+  format      Format
+  status      ProbeStatus @default(DRAFT)
 
-  tags             String[]
-  effortMinutes    Int          @default(10)
-  fitnessScore     Float?
+  tags          String[]
+  effortMinutes Int      @default(10)
+  fitnessScore  Float?
 
-  createdAt        DateTime     @default(now())
-  updatedAt        DateTime     @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
-  platformPosts    PlatformPost[]
-  reviews          SignalReview[]
-  mutations        Mutation[]
+  platformPosts PlatformPost[]
+  reviews       SignalReview[]
+  mutations     Mutation[]
 }
 
 model PlatformPost {
-  id               String       @id @default(cuid())
+  id String @id @default(cuid())
 
-  probeId          String
-  probe            Probe        @relation(fields: [probeId], references: [id])
+  probeId String
+  probe   Probe  @relation(fields: [probeId], references: [id])
 
-  platform         Platform
-  url              String?
-  externalId       String?
-  caption          String?
-  publishedAt      DateTime?
+  platform    Platform
+  url         String?
+  externalId  String?
+  caption     String?
+  publishedAt DateTime?
 
-  createdAt        DateTime     @default(now())
-  updatedAt        DateTime     @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
-  snapshots        MetricSnapshot[]
+  snapshots MetricSnapshot[]
 }
 
 model MetricSnapshot {
-  id               String       @id @default(cuid())
+  id String @id @default(cuid())
 
-  platformPostId   String
-  platformPost     PlatformPost @relation(fields: [platformPostId], references: [id])
+  platformPostId String
+  platformPost   PlatformPost @relation(fields: [platformPostId], references: [id])
 
-  capturedAt       DateTime     @default(now())
-  hoursSincePost   Int?
+  capturedAt     DateTime @default(now())
+  hoursSincePost Int?
 
-  impressions      Int?
-  views            Int?
-  likes            Int?
-  comments         Int?
-  shares           Int?
-  saves            Int?
-  follows          Int?
-  profileClicks    Int?
-  linkClicks       Int?
-  leads            Int?
+  impressions   Int?
+  views         Int?
+  likes         Int?
+  comments      Int?
+  shares        Int?
+  saves         Int?
+  follows       Int?
+  profileClicks Int?
+  linkClicks    Int?
+  leads         Int?
 
   qualitativeScore Int?
   notes            String?
 }
 
 model SignalReview {
-  id               String         @id @default(cuid())
+  id String @id @default(cuid())
 
-  probeId          String
-  probe            Probe          @relation(fields: [probeId], references: [id])
+  probeId String
+  probe   Probe  @relation(fields: [probeId], references: [id])
 
-  reviewedAt       DateTime       @default(now())
+  reviewedAt DateTime @default(now())
 
-  signal           SignalStrength
-  confidence       Confidence
+  signal     SignalStrength
+  confidence Confidence
 
-  observation      String
-  interpretation   String
-  decision         String?
+  observation    String
+  interpretation String
+  decision       String?
 
   inferredAudience String?
   inferredProblem  String?
   inferredPromise  String?
   inferredTags     String[]
 
-  trustAligned     Boolean        @default(true)
-  shouldMutate     Boolean        @default(false)
+  trustAligned Boolean @default(true)
+  shouldMutate Boolean @default(false)
 }
 
 model GenerationReview {
-  id                  String     @id @default(cuid())
+  id String @id @default(cuid())
 
-  generationId        String
-  generation          Generation @relation(fields: [generationId], references: [id])
+  generationId String
+  generation   Generation @relation(fields: [generationId], references: [id])
 
-  reviewedAt          DateTime   @default(now())
+  reviewedAt DateTime @default(now())
 
-  summary             String
-  winnerProbeId       String?
-  rationale           String?
+  summary       String
+  winnerProbeId String?
+  rationale     String?
 
-  nextGenerationPlan  String?
+  nextGenerationPlan String?
 }
 
 model Mutation {
-  id             String         @id @default(cuid())
+  id String @id @default(cuid())
 
-  sourceProbeId  String
-  sourceProbe    Probe          @relation(fields: [sourceProbeId], references: [id])
+  sourceProbeId String
+  sourceProbe   Probe  @relation(fields: [sourceProbeId], references: [id])
 
-  description    String
-  mutationType   MutationType
-  status         MutationStatus @default(OPEN)
+  description  String
+  mutationType MutationType
+  status       MutationStatus @default(OPEN)
 
-  createdAt      DateTime       @default(now())
-  updatedAt      DateTime       @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
 enum GenerationStatus {

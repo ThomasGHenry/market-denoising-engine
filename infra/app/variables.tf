@@ -27,3 +27,39 @@ variable "project_name" {
   type        = string
   default     = "market-denoising-engine"
 }
+
+variable "auth_secret" {
+  description = "NextAuth AUTH_SECRET — generate with: openssl rand -hex 32"
+  type        = string
+  sensitive   = true
+}
+
+variable "auth_github_id" {
+  description = "GitHub OAuth App Client ID — github.com/settings/developers"
+  type        = string
+  sensitive   = true
+}
+
+variable "auth_github_secret" {
+  description = "GitHub OAuth App Client Secret — github.com/settings/developers"
+  type        = string
+  sensitive   = true
+}
+
+variable "auth_resend_key" {
+  description = "Resend API key for transactional email"
+  type        = string
+  sensitive   = true
+}
+
+variable "resend_api_key" {
+  description = "Resend full-access API key for domain management — BW item: mde-auth-secrets"
+  type        = string
+  sensitive   = true
+}
+
+variable "dreamhost_api_key" {
+  description = "Dreamhost API key (dns-* access) — BW item: dreamhost-api-key"
+  type        = string
+  sensitive   = true
+}

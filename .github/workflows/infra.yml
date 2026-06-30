@@ -33,6 +33,14 @@ jobs:
         working-directory: infra/github
         env:
           TF_VAR_github_token: ${{ secrets.TF_VAR_github_token }}
+          TF_VAR_auth_github_id: ${{ secrets.TF_VAR_AUTH_GITHUB_ID }}
+          TF_VAR_auth_github_secret: ${{ secrets.TF_VAR_AUTH_GITHUB_SECRET }}
+          TF_VAR_auth_secret: ${{ secrets.TF_VAR_AUTH_SECRET }}
+          TF_VAR_auth_resend_key: ${{ secrets.TF_VAR_AUTH_RESEND_KEY }}
+          TF_VAR_neon_api_key: ${{ secrets.TF_VAR_NEON_API_KEY }}
+          TF_VAR_vercel_token: ${{ secrets.TF_VAR_VERCEL_TOKEN }}
+          TF_VAR_resend_api_key: ${{ secrets.TF_VAR_RESEND_API_KEY }}
+          TF_VAR_dreamhost_api_key: ${{ secrets.TF_VAR_DREAMHOST_API_KEY }}
 
       - name: Plan infra/app
         id: plan-app
@@ -44,6 +52,12 @@ jobs:
         env:
           TF_VAR_vercel_token: ${{ secrets.TF_VAR_vercel_token }}
           TF_VAR_neon_api_key: ${{ secrets.TF_VAR_neon_api_key }}
+          TF_VAR_auth_secret: ${{ secrets.TF_VAR_auth_secret }}
+          TF_VAR_auth_github_id: ${{ secrets.TF_VAR_auth_github_id }}
+          TF_VAR_auth_github_secret: ${{ secrets.TF_VAR_auth_github_secret }}
+          TF_VAR_auth_resend_key: ${{ secrets.TF_VAR_AUTH_RESEND_KEY }}
+          TF_VAR_resend_api_key: ${{ secrets.TF_VAR_RESEND_API_KEY }}
+          TF_VAR_dreamhost_api_key: ${{ secrets.TF_VAR_DREAMHOST_API_KEY }}
 
       - name: Post plan comment
         env:
@@ -77,6 +91,14 @@ jobs:
         working-directory: infra/github
         env:
           TF_VAR_github_token: ${{ secrets.TF_VAR_github_token }}
+          TF_VAR_auth_github_id: ${{ secrets.TF_VAR_AUTH_GITHUB_ID }}
+          TF_VAR_auth_github_secret: ${{ secrets.TF_VAR_AUTH_GITHUB_SECRET }}
+          TF_VAR_auth_secret: ${{ secrets.TF_VAR_AUTH_SECRET }}
+          TF_VAR_auth_resend_key: ${{ secrets.TF_VAR_AUTH_RESEND_KEY }}
+          TF_VAR_neon_api_key: ${{ secrets.TF_VAR_NEON_API_KEY }}
+          TF_VAR_vercel_token: ${{ secrets.TF_VAR_VERCEL_TOKEN }}
+          TF_VAR_resend_api_key: ${{ secrets.TF_VAR_RESEND_API_KEY }}
+          TF_VAR_dreamhost_api_key: ${{ secrets.TF_VAR_DREAMHOST_API_KEY }}
 
       - name: Apply infra/app
         run: tofu init && tofu apply -auto-approve
@@ -84,3 +106,9 @@ jobs:
         env:
           TF_VAR_vercel_token: ${{ secrets.TF_VAR_vercel_token }}
           TF_VAR_neon_api_key: ${{ secrets.TF_VAR_neon_api_key }}
+          TF_VAR_auth_secret: ${{ secrets.TF_VAR_auth_secret }}
+          TF_VAR_auth_github_id: ${{ secrets.TF_VAR_auth_github_id }}
+          TF_VAR_auth_github_secret: ${{ secrets.TF_VAR_auth_github_secret }}
+          TF_VAR_auth_resend_key: ${{ secrets.TF_VAR_AUTH_RESEND_KEY }}
+          TF_VAR_resend_api_key: ${{ secrets.TF_VAR_RESEND_API_KEY }}
+          TF_VAR_dreamhost_api_key: ${{ secrets.TF_VAR_DREAMHOST_API_KEY }}
