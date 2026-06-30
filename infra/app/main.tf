@@ -95,6 +95,12 @@ resource "vercel_project_environment_variables" "mde" {
       sensitive = true
     },
     {
+      key       = "AUTH_URL"
+      value     = "https://market-denoising-engine-thomas-g-henry-llc.vercel.app"
+      target    = ["production"]
+      sensitive = false
+    },
+    {
       key       = "AUTH_GITHUB_ID"
       value     = var.auth_github_id
       target    = ["production"]
