@@ -13,10 +13,6 @@ terraform {
       source  = "registry.terraform.io/armaaar/resend"
       version = "~> 1.0"
     }
-    dreamhost = {
-      source  = "adamantal/dreamhost"
-      version = "~> 0.3"
-    }
   }
 }
 
@@ -30,10 +26,6 @@ provider "vercel" {
 
 provider "resend" {
   api_key = var.resend_api_key
-}
-
-provider "dreamhost" {
-  api_key = var.dreamhost_api_key
 }
 
 resource "neon_project" "mde" {
@@ -125,16 +117,4 @@ resource "vercel_project_environment_variables" "mde" {
       sensitive = false
     },
   ]
-}
-
-resource "resend_domain" "thomasghenry" {
-  name   = "thomasghenry.com"
-  region = "us-east-1"
-}
-
-resource "dreamhost_dns_record" "resend" {
-  for_each = { for r in resend_domain.thomasghenry.records : r.name => r }
-  record   = each.value.name
-  type     = each.value.type
-  value    = each.value.value
 }

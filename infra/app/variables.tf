@@ -57,9 +57,3 @@ variable "resend_api_key" {
   type        = string
   sensitive   = true
 }
-
-variable "dreamhost_api_key" {
-  description = "Dreamhost API key (dns-* access) — BW item: dreamhost-api-key"
-  type        = string
-  sensitive   = true
-}
