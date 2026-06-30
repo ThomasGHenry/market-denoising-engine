@@ -7,6 +7,7 @@ on:
 
 permissions:
   contents: read
+  deployments: read
   issues: write
   pull-requests: read
 
@@ -144,11 +145,66 @@ jobs:
           DATABASE_URL: postgresql://localhost/dummy
       - run: npx nx run-many -t build
 
+  # ─── PHASE 2: E2E SMOKE (pull_request only) ───────────────────────────────
+
+  e2e-smoke:
+    name: E2E Smoke
+    needs: [build]
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: '22', cache: 'npm' }
+      - run: npm ci --ignore-scripts
+      - name: Wait for Vercel preview deployment
+        id: vercel-url
+        run: |
+          SHA="${GITHUB_SHA}"
+          REPO="${GITHUB_REPOSITORY}"
+          PREVIEW_URL=""
+          for i in $(seq 1 20); do
+            DEPLOYMENT_ID=$(gh api "repos/${REPO}/deployments?sha=${SHA}&environment=Preview&per_page=1" \
+              --jq '.[0].id // empty')
+            if [ -n "$DEPLOYMENT_ID" ]; then
+              STATE=$(gh api "repos/${REPO}/deployments/${DEPLOYMENT_ID}/statuses?per_page=1" \
+                --jq '.[0].state // empty')
+              if [ "$STATE" = "success" ]; then
+                PREVIEW_URL=$(gh api "repos/${REPO}/deployments/${DEPLOYMENT_ID}/statuses?per_page=1" \
+                  --jq '.[0].target_url')
+                break
+              fi
+            fi
+            echo "Attempt ${i}/20: deployment not ready, waiting 15s"
+            sleep 15
+          done
+          if [ -z "$PREVIEW_URL" ]; then
+            echo "Vercel preview deployment did not reach success within 5 minutes"
+            exit 1
+          fi
+          echo "url=${PREVIEW_URL}" >> "$GITHUB_OUTPUT"
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_SHA: ${{ github.sha }}
+          GITHUB_REPOSITORY: ${{ github.repository }}
+      - run: npx playwright install --with-deps chromium
+      - name: Run login smoke test
+        run: npx playwright test login.smoke
+        working-directory: apps/web-e2e
+        env:
+          PLAYWRIGHT_BASE_URL: ${{ steps.vercel-url.outputs.url }}
+      - uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: smoke-playwright-report
+          path: apps/web-e2e/playwright-report/
+          retention-days: 7
+
   # ─── AGGREGATE (sole required GitHub status check) ────────────────────────
 
   commit-validation:
     name: Commit Validation
-    needs: [gitleaks, actionlint, validate-adrs, validate-commits, shellcheck, prisma-migrate-check, typecheck, lint, test, build]
+    needs: [gitleaks, actionlint, validate-adrs, validate-commits, shellcheck, prisma-migrate-check, typecheck, lint, test, build, e2e-smoke]
     runs-on: ubuntu-24.04
     if: always()
     steps:
