@@ -100,23 +100,8 @@ jobs:
           TF_VAR_resend_api_key: ${{ secrets.TF_VAR_RESEND_API_KEY }}
           TF_VAR_dreamhost_api_key: ${{ secrets.TF_VAR_DREAMHOST_API_KEY }}
 
-      - name: Sync infra/app state
-        run: |
-          tofu init
-          tofu state rm vercel_project_environment_variables.mde 2>/dev/null || true
-          tofu import vercel_project_environment_variables.mde prj_zY3GKAFzEtiU4z36Vn4YnarqRffM
-        working-directory: infra/app
-        env:
-          TF_VAR_vercel_token: ${{ secrets.TF_VAR_vercel_token }}
-          TF_VAR_neon_api_key: ${{ secrets.TF_VAR_neon_api_key }}
-          TF_VAR_auth_secret: ${{ secrets.TF_VAR_auth_secret }}
-          TF_VAR_auth_github_id: ${{ secrets.TF_VAR_auth_github_id }}
-          TF_VAR_auth_github_secret: ${{ secrets.TF_VAR_auth_github_secret }}
-          TF_VAR_auth_resend_key: ${{ secrets.TF_VAR_AUTH_RESEND_KEY }}
-          TF_VAR_resend_api_key: ${{ secrets.TF_VAR_RESEND_API_KEY }}
-
       - name: Apply infra/app
-        run: tofu apply -auto-approve
+        run: tofu init && tofu apply -auto-approve
         working-directory: infra/app
         env:
           TF_VAR_vercel_token: ${{ secrets.TF_VAR_vercel_token }}
