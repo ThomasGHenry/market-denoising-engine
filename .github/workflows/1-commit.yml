@@ -7,7 +7,6 @@ on:
 
 permissions:
   contents: read
-  deployments: read
   issues: write
   pull-requests: read
 
@@ -160,33 +159,30 @@ jobs:
       - name: Wait for Vercel preview deployment
         id: vercel-url
         run: |
-          SHA="${GITHUB_SHA}"
-          REPO="${GITHUB_REPOSITORY}"
+          SHA="${PR_HEAD_SHA}"
+          TEAM_ID="team_caO6qCsE9CqPtrq520mXicUX"
           PREVIEW_URL=""
           for i in $(seq 1 40); do
-            DEPLOYMENT_ID=$(gh api "repos/${REPO}/deployments?sha=${SHA}&environment=Preview&per_page=1" \
-              --jq '.[0].id // empty')
-            if [ -n "$DEPLOYMENT_ID" ]; then
-              STATE=$(gh api "repos/${REPO}/deployments/${DEPLOYMENT_ID}/statuses?per_page=1" \
-                --jq '.[0].state // empty')
-              if [ "$STATE" = "success" ]; then
-                PREVIEW_URL=$(gh api "repos/${REPO}/deployments/${DEPLOYMENT_ID}/statuses?per_page=1" \
-                  --jq '.[0].target_url')
-                break
-              fi
+            RESPONSE=$(curl -sf \
+              "https://api.vercel.com/v6/deployments?teamId=${TEAM_ID}&meta.githubCommitSha=${SHA}&target=preview&limit=1" \
+              -H "Authorization: Bearer ${VERCEL_TOKEN}")
+            STATE=$(printf '%s' "$RESPONSE" | jq -r '.deployments[0].state // empty')
+            if [ "$STATE" = "READY" ]; then
+              RAW_URL=$(printf '%s' "$RESPONSE" | jq -r '.deployments[0].url // empty')
+              PREVIEW_URL="https://${RAW_URL}"
+              break
             fi
-            echo "Attempt ${i}/40: deployment not ready, waiting 15s"
+            echo "Attempt ${i}/40: state=${STATE:-none}, waiting 15s"
             sleep 15
           done
           if [ -z "$PREVIEW_URL" ]; then
-            echo "Vercel preview deployment did not reach success within 10 minutes"
+            echo "Vercel preview deployment did not reach READY within 10 minutes"
             exit 1
           fi
           echo "url=${PREVIEW_URL}" >> "$GITHUB_OUTPUT"
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          GITHUB_SHA: ${{ github.event.pull_request.head.sha }}
-          GITHUB_REPOSITORY: ${{ github.repository }}
+          VERCEL_TOKEN: ${{ secrets.TF_VAR_VERCEL_TOKEN }}
+          PR_HEAD_SHA: ${{ github.event.pull_request.head.sha }}
       - run: npx playwright install --with-deps chromium
       - name: Run login smoke test
         run: npx playwright test login.smoke
