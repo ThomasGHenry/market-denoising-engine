@@ -20,8 +20,14 @@ setup() {
   [[ "$output" == *"NEEDS_JSON environment variable is required"* ]]
 }
 
-@test "skipped job exits 1" {
+@test "skipped job exits 0" {
   run env NEEDS_JSON='{"validate-adrs":{"result":"skipped"}}' "$VALIDATOR"
+  [ "$status" -eq 0 ]
+  [[ "$output" == *"All required jobs succeeded."* ]]
+}
+
+@test "cancelled job exits 1" {
+  run env NEEDS_JSON='{"e2e-smoke":{"result":"cancelled"}}' "$VALIDATOR"
   [ "$status" -eq 1 ]
-  [[ "$output" == *"validate-adrs: skipped"* ]]
+  [[ "$output" == *"e2e-smoke: cancelled"* ]]
 }
