@@ -4,6 +4,12 @@ variable "vercel_token" {
   sensitive   = true
 }
 
+variable "vercel_team" {
+  description = "Vercel team slug — thomas-g-henry-llc"
+  type        = string
+  default     = "thomas-g-henry-llc"
+}
+
 variable "neon_api_key" {
   description = "Neon personal API key — BW item: buenvecino-neon-api-key"
   type        = string
