@@ -57,7 +57,6 @@ jobs:
           TF_VAR_auth_github_secret: ${{ secrets.TF_VAR_auth_github_secret }}
           TF_VAR_auth_resend_key: ${{ secrets.TF_VAR_AUTH_RESEND_KEY }}
           TF_VAR_resend_api_key: ${{ secrets.TF_VAR_RESEND_API_KEY }}
-          TF_VAR_dreamhost_api_key: ${{ secrets.TF_VAR_DREAMHOST_API_KEY }}
 
       - name: Post plan comment
         env:
@@ -111,4 +110,3 @@ jobs:
           TF_VAR_auth_github_secret: ${{ secrets.TF_VAR_auth_github_secret }}
           TF_VAR_auth_resend_key: ${{ secrets.TF_VAR_AUTH_RESEND_KEY }}
           TF_VAR_resend_api_key: ${{ secrets.TF_VAR_RESEND_API_KEY }}
-          TF_VAR_dreamhost_api_key: ${{ secrets.TF_VAR_DREAMHOST_API_KEY }}
