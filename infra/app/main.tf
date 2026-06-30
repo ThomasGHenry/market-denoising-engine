@@ -22,6 +22,7 @@ provider "neon" {
 
 provider "vercel" {
   api_token = var.vercel_token
+  team      = var.vercel_team
 }
 
 provider "resend" {

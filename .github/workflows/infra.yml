@@ -104,7 +104,7 @@ jobs:
         run: |
           tofu init
           tofu state rm vercel_project_environment_variables.mde 2>/dev/null || true
-          tofu import vercel_project_environment_variables.mde prj_zY3GKAFzEtiU4z36Vn4YnarqRffM 2>/dev/null || true
+          tofu import vercel_project_environment_variables.mde prj_zY3GKAFzEtiU4z36Vn4YnarqRffM
         working-directory: infra/app
         env:
           TF_VAR_vercel_token: ${{ secrets.TF_VAR_vercel_token }}
