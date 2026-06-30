@@ -7,7 +7,7 @@ if [ -z "${NEEDS_JSON:-}" ]; then
 fi
 
 FAILED=$(echo "$NEEDS_JSON" | \
-  jq -r 'to_entries[] | select(.value.result != "success") | "\(.key): \(.value.result)"')
+  jq -r 'to_entries[] | select(.value.result != "success" and .value.result != "skipped") | "\(.key): \(.value.result)"')
 
 if [ -n "$FAILED" ]; then
   echo "The following required jobs did not succeed:"
