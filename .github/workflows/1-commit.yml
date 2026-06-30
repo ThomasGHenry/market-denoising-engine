@@ -185,7 +185,7 @@ jobs:
           echo "url=${PREVIEW_URL}" >> "$GITHUB_OUTPUT"
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          GITHUB_SHA: ${{ github.sha }}
+          GITHUB_SHA: ${{ github.event.pull_request.head.sha }}
           GITHUB_REPOSITORY: ${{ github.repository }}
       - run: npx playwright install --with-deps chromium
       - name: Run login smoke test
