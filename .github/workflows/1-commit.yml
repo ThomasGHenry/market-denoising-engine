@@ -164,15 +164,14 @@ jobs:
           PREVIEW_URL=""
           for i in $(seq 1 40); do
             RESPONSE=$(curl -sf \
-              "https://api.vercel.com/v6/deployments?teamId=${TEAM_ID}&meta.githubCommitSha=${SHA}&target=preview&limit=1" \
+              "https://api.vercel.com/v6/deployments?teamId=${TEAM_ID}&sha=${SHA}&state=READY&limit=1" \
               -H "Authorization: Bearer ${VERCEL_TOKEN}")
-            STATE=$(printf '%s' "$RESPONSE" | jq -r '.deployments[0].state // empty')
-            if [ "$STATE" = "READY" ]; then
-              RAW_URL=$(printf '%s' "$RESPONSE" | jq -r '.deployments[0].url // empty')
+            RAW_URL=$(printf '%s' "$RESPONSE" | jq -r '.deployments[0].url // empty')
+            if [ -n "$RAW_URL" ]; then
               PREVIEW_URL="https://${RAW_URL}"
               break
             fi
-            echo "Attempt ${i}/40: state=${STATE:-none}, waiting 15s"
+            echo "Attempt ${i}/40: not ready yet, waiting 15s"
             sleep 15
           done
           if [ -z "$PREVIEW_URL" ]; then
