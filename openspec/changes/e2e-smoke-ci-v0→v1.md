@@ -9,12 +9,16 @@ gated on the Vercel preview deployment completing. Blocks merge via `commit-vali
 
 - `apps/web-e2e/src/smoke.spec.ts` contains a full learning-loop test that requires a
   running database, authenticated session, and live application data.
+- `apps/web-e2e/src/auth.ts` provides `loginWithMagicLink()` (requires DB connection).
 - `apps/web-e2e/playwright.config.ts` reads `PLAYWRIGHT_BASE_URL`, defaulting to
   `http://localhost:3000`.
 - `.github/workflows/1-commit.yml` has no e2e step; `commit-validation` aggregates 10 jobs.
+- `.github/workflows/2-e2e.yml` runs the full e2e suite on `workflow_run` after merge to
+  main, using `secrets.VERCEL_PREVIEW_URL` (a static secret, not per-PR).
 - `scripts/ci/validate-aggregate.sh` fails if any `needs` job result is not `"success"`.
   A skipped job (result: `"skipped"`) would fail the aggregate under the current script.
 - No Playwright browsers are installed in CI runners.
+- `nx run web-e2e:e2e` resolves via `nx:run-script` to `npm run e2e` → `playwright test`.
 
 ## Proposed Changes
 
