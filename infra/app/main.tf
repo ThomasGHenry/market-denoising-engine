@@ -120,7 +120,7 @@ resource "vercel_project_environment_variables" "mde" {
     {
       key       = "E2E_MODE"
       value     = "true"
-      target    = ["preview"]
+      target    = ["preview", "production"]
       sensitive = false
     },
   ]
