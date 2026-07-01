@@ -1,33 +1,24 @@
 import { describe, it, expect, vi } from 'vitest'
 import { isAllowedEmail } from './auth'
 
-vi.mock('next-auth', () => ({
-  default: vi.fn(() => ({
-    handlers: {},
-    auth: vi.fn(),
-    signIn: vi.fn(),
-    signOut: vi.fn(),
-  })),
+vi.mock('better-auth', () => ({
+  betterAuth: vi.fn(() => ({})),
 }))
 
-vi.mock('next-auth/providers/github', () => ({
-  default: vi.fn(),
+vi.mock('better-auth/adapters/prisma', () => ({
+  prismaAdapter: vi.fn(),
 }))
 
-vi.mock('next-auth/providers/resend', () => ({
-  default: vi.fn(),
+vi.mock('better-auth/plugins', () => ({
+  magicLink: vi.fn(),
 }))
 
-vi.mock('@auth/prisma-adapter', () => ({
-  PrismaAdapter: vi.fn(),
+vi.mock('@template/db', () => ({
+  prisma: {},
 }))
 
-vi.mock('@prisma/client', () => ({
-  PrismaClient: vi.fn(),
-}))
-
-vi.mock('@prisma/adapter-pg', () => ({
-  PrismaPg: vi.fn(),
+vi.mock('resend', () => ({
+  Resend: vi.fn(),
 }))
 
 describe('isAllowedEmail', function () {
