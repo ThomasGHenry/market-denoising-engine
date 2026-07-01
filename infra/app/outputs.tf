@@ -10,7 +10,7 @@ output "vercel_project_id" {
 
 output "vercel_preview_url" {
   description = "Set as VERCEL_PREVIEW_URL on the 'preview' GitHub environment secret"
-  value       = "${var.project_name}.vercel.app"
+  value       = "https://${var.project_name}-${var.vercel_team}.vercel.app"
 }
 
 output "database_url" {
