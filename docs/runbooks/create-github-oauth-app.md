@@ -4,7 +4,7 @@ Agentic runbook. Execute by telling Claude: "run the create-github-oauth-app run
 
 ## Context
 
-MDE uses Auth.js v5 with GitHub OAuth for solo-operator authentication. GitHub does not
+MDE uses Better Auth with GitHub OAuth for solo-operator authentication. GitHub does not
 expose OAuth App creation via API or Terraform — it must be done through the web UI.
 This runbook automates that step using browser tools and stores credentials in Bitwarden.
 
@@ -86,7 +86,7 @@ For local dev, add to `apps/web/.env.local` (gitignored):
 AUTH_GITHUB_ID=<client id>
 AUTH_GITHUB_SECRET=<client secret>
 AUTH_SECRET=<openssl rand -hex 32 — generate a separate one for local>
-AUTH_URL=http://localhost:3000
+BETTER_AUTH_URL=http://localhost:3000
 ```
 
 The same OAuth App covers local dev — add `http://localhost:3000/api/auth/callback/github`
@@ -98,7 +98,7 @@ When the production canonical URL changes (e.g. custom domain added, team slug c
 
 1. Navigate to: `github.com/settings/developers` → OAuth Apps → `market-denoising-engine`
 2. Update **Authorization callback URL** to the new canonical URL + `/api/auth/callback/github`
-3. Update `AUTH_URL` in `infra/app/main.tf` to match
+3. Update `BETTER_AUTH_URL` in `infra/app/main.tf` to match
 4. Update `Homepage URL` to the new canonical URL
 5. Save changes
 6. Update this runbook's Prerequisites section with the new canonical URL
