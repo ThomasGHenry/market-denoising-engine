@@ -90,7 +90,7 @@ resource "vercel_project_environment_variables" "mde" {
     {
       key       = "BETTER_AUTH_URL"
       value     = "https://market-denoising-engine-thomas-g-henry-llc.vercel.app"
-      target    = ["production"]
+      target    = ["production", "preview"]
       sensitive = false
     },
     {
