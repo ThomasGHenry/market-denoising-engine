@@ -44,7 +44,7 @@ test('full learning loop: create generation → probe → post → metrics → f
   await page.click('button:has-text("Record Post")')
   await page.waitForURL('**/probes/' + probeId)
 
-  const postLink = page.getByRole('link', { name: 'LINKEDIN' })
+  const postLink = page.getByRole('link', { name: 'LINKEDIN', exact: true })
   const postHref = await postLink.getAttribute('href')
   const postId = extractIdFromUrl(postHref ?? '')
 
