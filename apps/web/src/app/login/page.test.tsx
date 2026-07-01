@@ -1,3 +1,4 @@
+// @vitest-environment jsdom
 import { describe, it, expect, vi, afterEach, beforeEach } from 'vitest'
 import { render, screen, cleanup } from '@testing-library/react'
 import React from 'react'
@@ -18,6 +19,12 @@ vi.mock('../../lib/auth', () => ({
 
 vi.mock('next/navigation', () => ({
   redirect: vi.fn(),
+}))
+
+vi.mock('./github-sign-in-button', () => ({
+  default: function GitHubSignInButton() {
+    return React.createElement('button', null, 'Sign in with GitHub')
+  },
 }))
 
 describe('LoginPage', function () {
