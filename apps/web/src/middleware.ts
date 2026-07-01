@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getSessionCookie } from 'better-auth/cookies'
 
+export const runtime = 'nodejs'
+
 const PUBLIC_PREFIXES = ['/login', '/api/auth']
 
 function isPublicPath(pathname: string): boolean {

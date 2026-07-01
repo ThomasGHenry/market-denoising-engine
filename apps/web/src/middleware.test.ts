@@ -1,12 +1,11 @@
 import { describe, it, expect, vi } from 'vitest'
-import { NextRequest, NextResponse } from 'next/server'
+import { NextRequest } from 'next/server'
+import { getSessionCookie } from 'better-auth/cookies'
 import { middleware, config } from './middleware'
 
 vi.mock('better-auth/cookies', () => ({
   getSessionCookie: vi.fn(),
 }))
-
-import { getSessionCookie } from 'better-auth/cookies'
 
 const mockGetSessionCookie = vi.mocked(getSessionCookie)
 
