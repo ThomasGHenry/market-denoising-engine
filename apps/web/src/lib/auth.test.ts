@@ -60,7 +60,7 @@ describe('sendMagicLinkEmail', function () {
     mockUpsert.mockResolvedValue({})
   })
 
-  it('writes sentinel only for allowed email when E2E_MODE is true', async function () {
+  it('writes sentinel AND sends real email for allowed email when E2E_MODE is true', async function () {
     process.env.E2E_MODE = 'true'
 
     await sendMagicLinkEmail({ email: 'thomasghenry@gmail.com', url: 'https://example.com/magic', token: 'tok' })
@@ -68,7 +68,7 @@ describe('sendMagicLinkEmail', function () {
     expect(mockUpsert).toHaveBeenCalledWith(
       expect.objectContaining({ where: { id: '__e2e__thomasghenry@gmail.com' } }),
     )
-    expect(mockEmailSend).not.toHaveBeenCalled()
+    expect(mockEmailSend).toHaveBeenCalled()
   })
 
   it('falls through to real email for non-allowed email even when E2E_MODE is true', async function () {

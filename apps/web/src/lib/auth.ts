@@ -55,7 +55,6 @@ export async function sendMagicLinkEmail({
 }): Promise<void> {
   if (process.env.E2E_MODE === 'true' && isAllowedEmail(email)) {
     await storeMagicLinkForE2E(email, url)
-    return
   }
   await sendRealEmail(email, url)
 }
