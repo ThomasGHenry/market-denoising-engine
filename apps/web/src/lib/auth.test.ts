@@ -1,10 +1,9 @@
 import { describe, it, expect, vi } from 'vitest'
+import { isAllowedEmail } from './auth'
 
 vi.hoisted(function () {
   process.env.AUTH_SECRET = 'test-secret-for-vitest'
 })
-
-import { isAllowedEmail } from './auth'
 
 vi.mock('better-auth', () => ({
   betterAuth: vi.fn(() => ({})),
