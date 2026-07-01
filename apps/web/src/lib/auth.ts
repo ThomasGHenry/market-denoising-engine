@@ -1,36 +1,69 @@
-import NextAuth, { type NextAuthResult } from 'next-auth'
-import GitHub from 'next-auth/providers/github'
-import Resend from 'next-auth/providers/resend'
-import { PrismaAdapter } from '@auth/prisma-adapter'
-import { PrismaClient } from '@prisma/client'
-import { PrismaPg } from '@prisma/adapter-pg'
-import type { Provider } from '@auth/core/providers'
-import { authConfig, isAllowedEmail } from './auth.config'
+import { betterAuth } from 'better-auth'
+import { prismaAdapter } from 'better-auth/adapters/prisma'
+import { magicLink } from 'better-auth/plugins'
+import { Resend } from 'resend'
+import { prisma } from '@template/db'
 
-export { isAllowedEmail }
+const ALLOWED_EMAIL = 'thomasghenry@gmail.com'
 
-function buildAuthPrismaClient(): PrismaClient {
-  const url = process.env.DATABASE_URL_UNPOOLED ?? process.env.DATABASE_URL ?? ''
-  const pgAdapter = new PrismaPg({ connectionString: url })
-  return new PrismaClient({ adapter: pgAdapter })
+export function isAllowedEmail(email: string): boolean {
+  return email === ALLOWED_EMAIL
 }
 
-function buildProviders(): Provider[] {
-  const from = process.env.AUTH_EMAIL_FROM ?? 'MDE <onboarding@resend.dev>'
-  const providers: Provider[] = [Resend({ from })]
-  if (process.env.AUTH_GITHUB_ID) {
-    providers.push(GitHub as Provider)
+function resolveSecret(): string {
+  const secret = process.env.BETTER_AUTH_SECRET ?? process.env.AUTH_SECRET
+  if (!secret) throw new Error('BETTER_AUTH_SECRET or AUTH_SECRET must be set')
+  return secret
+}
+
+function buildGithubProvider(): Record<string, unknown> {
+  if (!process.env.AUTH_GITHUB_ID) return {}
+  return {
+    github: {
+      clientId: process.env.AUTH_GITHUB_ID,
+      clientSecret: process.env.AUTH_GITHUB_SECRET ?? '',
+    },
   }
-  return providers
 }
 
-const nextAuth: NextAuthResult = NextAuth({
-  ...authConfig,
-  adapter: PrismaAdapter(buildAuthPrismaClient()),
-  providers: buildProviders(),
-})
+async function storeMagicLinkForE2E(email: string, url: string): Promise<void> {
+  const id = `__e2e__${email}`
+  await prisma.verification.upsert({
+    where: { id },
+    create: { id, identifier: id, value: url, expiresAt: new Date(Date.now() + 5 * 60 * 1000) },
+    update: { value: url, expiresAt: new Date(Date.now() + 5 * 60 * 1000) },
+  })
+}
 
-export const handlers: NextAuthResult['handlers'] = nextAuth.handlers
-export const auth: NextAuthResult['auth'] = nextAuth.auth
-export const signIn: NextAuthResult['signIn'] = nextAuth.signIn
-export const signOut: NextAuthResult['signOut'] = nextAuth.signOut
+async function sendRealEmail(email: string, url: string): Promise<void> {
+  const resend = new Resend(process.env.AUTH_RESEND_KEY)
+  await resend.emails.send({
+    from: process.env.AUTH_EMAIL_FROM ?? 'MDE <onboarding@resend.dev>',
+    to: email,
+    subject: 'Sign in to MDE',
+    html: `<a href="${url}">Click here to sign in</a>`,
+  })
+}
+
+async function sendMagicLinkEmail({
+  email,
+  url,
+}: {
+  email: string
+  url: string
+  token: string
+}): Promise<void> {
+  if (process.env.E2E_MODE === 'true') {
+    await storeMagicLinkForE2E(email, url)
+    return
+  }
+  await sendRealEmail(email, url)
+}
+
+export const auth = betterAuth({
+  database: prismaAdapter(prisma, { provider: 'postgresql' }),
+  secret: resolveSecret(),
+  emailAndPassword: { enabled: false },
+  socialProviders: buildGithubProvider(),
+  plugins: [magicLink({ sendMagicLink: sendMagicLinkEmail })],
+})

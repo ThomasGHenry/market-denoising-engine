@@ -1,15 +1,25 @@
 import React from 'react'
-import { signIn } from '../../lib/auth'
+import { headers } from 'next/headers'
+import { redirect } from 'next/navigation'
+import { auth } from '../../lib/auth'
 
-async function signInWithResend(formData: FormData) {
+async function signInWithMagicLink(formData: FormData): Promise<void> {
   'use server'
-  const email = formData.get('email') as string
-  await signIn('resend', { email, redirectTo: '/' })
+  const raw = formData.get('email')
+  if (typeof raw !== 'string' || !raw) return
+  await auth.api.signInMagicLink({
+    body: { email: raw, callbackURL: '/' },
+    headers: await headers(),
+  })
 }
 
-async function signInWithGitHub() {
+async function signInWithGitHub(): Promise<void> {
   'use server'
-  await signIn('github', { redirectTo: '/' })
+  const response = await auth.api.signInSocial({
+    body: { provider: 'github', callbackURL: '/' },
+    headers: await headers(),
+  })
+  if (response?.url) redirect(response.url)
 }
 
 function GitHubSignInForm() {
@@ -25,7 +35,7 @@ export default function LoginPage() {
   return (
     <main>
       <h1>Sign in</h1>
-      <form action={signInWithResend}>
+      <form action={signInWithMagicLink}>
         <label htmlFor="email">Email address</label>
         <input id="email" name="email" type="email" required />
         <button type="submit">Send magic link</button>

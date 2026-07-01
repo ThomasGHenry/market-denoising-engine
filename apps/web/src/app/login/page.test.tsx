@@ -3,8 +3,21 @@ import { render, screen, cleanup } from '@testing-library/react'
 import React from 'react'
 import LoginPage from './page'
 
+vi.mock('next/headers', () => ({
+  headers: vi.fn(() => new Headers()),
+}))
+
 vi.mock('../../lib/auth', () => ({
-  signIn: vi.fn(),
+  auth: {
+    api: {
+      signInMagicLink: vi.fn(),
+      signInSocial: vi.fn(),
+    },
+  },
+}))
+
+vi.mock('next/navigation', () => ({
+  redirect: vi.fn(),
 }))
 
 describe('LoginPage', function () {

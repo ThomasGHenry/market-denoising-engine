@@ -30,8 +30,8 @@ jobs:
           npx nx run web-e2e:e2e
         env:
           PLAYWRIGHT_BASE_URL: ${{ secrets.VERCEL_PREVIEW_URL }}
-          DATABASE_URL_UNPOOLED: ${{ secrets.DATABASE_URL_UNPOOLED }}
           DATABASE_URL: ${{ secrets.DATABASE_URL_UNPOOLED }}
+          E2E_MODE: "true"
       - uses: actions/upload-artifact@v4
         if: failure()
         with:

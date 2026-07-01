@@ -143,6 +143,8 @@ jobs:
         env:
           DATABASE_URL: postgresql://localhost/dummy
       - run: npx nx run-many -t build
+        env:
+          BETTER_AUTH_SECRET: ${{ secrets.TF_VAR_auth_secret }}
 
   # ─── PHASE 2: E2E SMOKE (pull_request only) ───────────────────────────────
 
