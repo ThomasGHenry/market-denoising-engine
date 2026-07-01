@@ -1,10 +1,22 @@
-import NextAuth, { type NextAuthResult } from 'next-auth'
-import { authConfig } from './lib/auth.config'
+import { NextRequest, NextResponse } from 'next/server'
+import { getSessionCookie } from 'better-auth/cookies'
 
-const middleware: NextAuthResult['auth'] = NextAuth(authConfig).auth
+const PUBLIC_PREFIXES = ['/login', '/api/auth']
 
-export default middleware
+function isPublicPath(pathname: string): boolean {
+  return PUBLIC_PREFIXES.some(function (prefix) {
+    return pathname.startsWith(prefix)
+  })
+}
+
+export function middleware(request: NextRequest): NextResponse {
+  const sessionCookie = getSessionCookie(request)
+  if (!sessionCookie && !isPublicPath(request.nextUrl.pathname)) {
+    return NextResponse.redirect(new URL('/login', request.url))
+  }
+  return NextResponse.next()
+}
 
 export const config = {
-  matcher: ['/((?!login|api/auth|_next/static|_next/image|favicon.ico).*)'],
+  matcher: ['/((?!_next/static|_next/image|favicon.ico).*)'],
 }
