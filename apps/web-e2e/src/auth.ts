@@ -14,7 +14,7 @@ async function readVerificationToken(identifier: string): Promise<string> {
 
 function buildCallbackUrl(baseUrl: string, identifier: string, token: string): string {
   const params = new URLSearchParams({ callbackUrl: '/', token, email: identifier })
-  return `${baseUrl}/api/auth/callback/email?${params.toString()}`
+  return `${baseUrl}/api/auth/callback/resend?${params.toString()}`
 }
 
 export async function loginWithMagicLink(page: Page, email: string): Promise<void> {
