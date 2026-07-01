@@ -10,8 +10,6 @@ export function isAllowedEmail(email: string): boolean {
   return email === ALLOWED_EMAIL
 }
 
-const resend = new Resend(process.env.AUTH_RESEND_KEY)
-
 function resolveSecret(): string {
   const secret = process.env.BETTER_AUTH_SECRET ?? process.env.AUTH_SECRET
   if (!secret) throw new Error('BETTER_AUTH_SECRET or AUTH_SECRET must be set')
@@ -38,6 +36,7 @@ async function storeMagicLinkForE2E(email: string, url: string): Promise<void> {
 }
 
 async function sendRealEmail(email: string, url: string): Promise<void> {
+  const resend = new Resend(process.env.AUTH_RESEND_KEY)
   await resend.emails.send({
     from: process.env.AUTH_EMAIL_FROM ?? 'MDE <onboarding@resend.dev>',
     to: email,
