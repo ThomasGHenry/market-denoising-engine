@@ -18,6 +18,8 @@ jobs:
         with: { node-version: '22', cache: 'npm' }
       - run: npm ci --ignore-scripts
       - run: npx prisma generate --config packages/db/prisma.config.ts
+        env:
+          DATABASE_URL: postgresql://localhost/dummy
       - run: npx playwright install chromium --with-deps
       - name: Run E2E
         run: |
