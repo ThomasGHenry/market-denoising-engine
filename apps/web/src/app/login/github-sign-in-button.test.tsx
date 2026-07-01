@@ -2,6 +2,7 @@
 import { describe, it, expect, vi, afterEach } from 'vitest'
 import { render, screen, fireEvent, cleanup } from '@testing-library/react'
 import React from 'react'
+import GitHubSignInButton from './github-sign-in-button'
 
 const { mockSignInSocial } = vi.hoisted(function () {
   return { mockSignInSocial: vi.fn() }
@@ -14,8 +15,6 @@ vi.mock('../../lib/auth-client', () => ({
     },
   },
 }))
-
-import GitHubSignInButton from './github-sign-in-button'
 
 describe('GitHubSignInButton', function () {
   afterEach(function () {
