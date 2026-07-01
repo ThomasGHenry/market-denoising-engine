@@ -1,4 +1,5 @@
 import { test, expect, type Page } from '@playwright/test'
+import { loginWithMagicLink } from './auth'
 
 function extractIdFromUrl(url: string): string {
   const parts = url.split('/')
@@ -13,6 +14,7 @@ test('full learning loop: create generation → probe → post → metrics → f
   const generationTitle = 'Smoke Gen ' + Date.now()
   const probeTitle = 'Smoke Probe ' + Date.now()
 
+  await loginWithMagicLink(page, 'thomasghenry@gmail.com')
   await page.goto('/generations/new')
   await page.fill('#title', generationTitle)
   await page.fill('#theme', 'test theme')
