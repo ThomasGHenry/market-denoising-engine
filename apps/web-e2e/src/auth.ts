@@ -23,13 +23,13 @@ function buildCallbackUrl(baseUrl: string, identifier: string, token: string): s
 export async function loginWithMagicLink(page: Page, email: string): Promise<void> {
   const baseUrl = process.env.PLAYWRIGHT_BASE_URL ?? 'http://localhost:3000'
 
-  await page.goto(`${baseUrl}/api/auth/signin/resend`, { method: 'POST' })
+  const csrfResponse = await page.request.get(`${baseUrl}/api/auth/csrf`)
+  const { csrfToken } = (await csrfResponse.json()) as { csrfToken: string }
+
   await page.request.post(`${baseUrl}/api/auth/signin/resend`, {
-    form: { email, csrfToken: '' },
+    form: { email, csrfToken },
   })
 
   const token = await consumeVerificationToken(email)
-  const callbackUrl = buildCallbackUrl(baseUrl, email, token)
-
-  await page.goto(callbackUrl)
+  await page.goto(buildCallbackUrl(baseUrl, email, token))
 }
