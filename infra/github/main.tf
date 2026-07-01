@@ -81,6 +81,36 @@ resource "github_repository_environment" "preview" {
   environment = "preview"
 }
 
+data "terraform_remote_state" "app" {
+  backend = "s3"
+  config = {
+    bucket   = "mde-tofu-state"
+    key      = "app/terraform.tfstate"
+    region   = "auto"
+    endpoint = "https://f6c1744bbffb823f40e0e8abc9555cf2.r2.cloudflarestorage.com"
+
+    skip_credentials_validation = true
+    skip_metadata_api_check     = true
+    skip_region_validation      = true
+    skip_requesting_account_id  = true
+    use_path_style              = true
+  }
+}
+
+resource "github_actions_environment_secret" "preview_vercel_preview_url" {
+  repository      = github_repository.repo.name
+  environment     = github_repository_environment.preview.environment
+  secret_name     = "VERCEL_PREVIEW_URL"
+  plaintext_value = data.terraform_remote_state.app.outputs.vercel_preview_url
+}
+
+resource "github_actions_environment_secret" "preview_database_url_unpooled" {
+  repository      = github_repository.repo.name
+  environment     = github_repository_environment.preview.environment
+  secret_name     = "DATABASE_URL_UNPOOLED"
+  plaintext_value = data.terraform_remote_state.app.outputs.database_url_unpooled
+}
+
 locals {
   labels = {
     "enhancement"           = { color = "0075ca", description = "New capability" }

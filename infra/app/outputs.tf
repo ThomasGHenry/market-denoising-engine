@@ -28,11 +28,11 @@ output "database_url_unpooled" {
 output "post_apply_steps" {
   description = "Manual steps required after tofu apply"
   value       = <<-EOT
-    GitHub → Settings → Environments → preview:
-      VERCEL_PREVIEW_URL = ${var.project_name}.vercel.app
-
     GitHub → Settings → Environments → production:
       VERCEL_TOKEN      = <from BW: thomasghenry-vercel-token>
       DATABASE_URL_PROD = run: tofu output -raw database_url
+
+    Note: preview environment secrets (VERCEL_PREVIEW_URL, DATABASE_URL_UNPOOLED)
+    are now managed by infra/github via terraform_remote_state.
   EOT
 }
