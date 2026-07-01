@@ -1,7 +1,7 @@
 import type { Page } from '@playwright/test'
 import { prisma } from '@template/db'
 
-async function consumeVerificationToken(identifier: string): Promise<string> {
+async function readVerificationToken(identifier: string): Promise<string> {
   const record = await prisma.verificationToken.findFirst({
     where: { identifier },
     orderBy: { expires: 'desc' },
@@ -9,9 +9,6 @@ async function consumeVerificationToken(identifier: string): Promise<string> {
   if (!record) {
     throw new Error(`No verification token found for ${identifier}`)
   }
-  await prisma.verificationToken.delete({
-    where: { identifier_token: { identifier: record.identifier, token: record.token } },
-  })
   return record.token
 }
 
@@ -30,6 +27,6 @@ export async function loginWithMagicLink(page: Page, email: string): Promise<voi
     form: { email, csrfToken },
   })
 
-  const token = await consumeVerificationToken(email)
+  const token = await readVerificationToken(email)
   await page.goto(buildCallbackUrl(baseUrl, email, token))
 }
