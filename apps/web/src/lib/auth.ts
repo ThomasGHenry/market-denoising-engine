@@ -12,6 +12,12 @@ export function isAllowedEmail(email: string): boolean {
 
 const resend = new Resend(process.env.AUTH_RESEND_KEY)
 
+function resolveSecret(): string {
+  const secret = process.env.BETTER_AUTH_SECRET ?? process.env.AUTH_SECRET
+  if (!secret) throw new Error('BETTER_AUTH_SECRET or AUTH_SECRET must be set')
+  return secret
+}
+
 function buildGithubProvider(): Record<string, unknown> {
   if (!process.env.AUTH_GITHUB_ID) return {}
   return {
@@ -31,18 +37,7 @@ async function storeMagicLinkForE2E(email: string, url: string): Promise<void> {
   })
 }
 
-async function sendMagicLinkEmail({
-  email,
-  url,
-}: {
-  email: string
-  url: string
-  token: string
-}): Promise<void> {
-  if (process.env.NODE_ENV !== 'production') {
-    await storeMagicLinkForE2E(email, url)
-    return
-  }
+async function sendRealEmail(email: string, url: string): Promise<void> {
   await resend.emails.send({
     from: process.env.AUTH_EMAIL_FROM ?? 'MDE <onboarding@resend.dev>',
     to: email,
@@ -51,9 +46,24 @@ async function sendMagicLinkEmail({
   })
 }
 
+async function sendMagicLinkEmail({
+  email,
+  url,
+}: {
+  email: string
+  url: string
+  token: string
+}): Promise<void> {
+  if (process.env.E2E_MODE === 'true') {
+    await storeMagicLinkForE2E(email, url)
+    return
+  }
+  await sendRealEmail(email, url)
+}
+
 export const auth = betterAuth({
   database: prismaAdapter(prisma, { provider: 'postgresql' }),
-  secret: process.env.BETTER_AUTH_SECRET ?? process.env.AUTH_SECRET,
+  secret: resolveSecret(),
   emailAndPassword: { enabled: false },
   socialProviders: buildGithubProvider(),
   plugins: [magicLink({ sendMagicLink: sendMagicLinkEmail })],

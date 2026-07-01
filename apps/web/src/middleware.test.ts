@@ -46,4 +46,16 @@ describe('middleware behaviour', function () {
     const result = middleware(makeRequest('/api/auth/sign-in/magic-link'))
     expect(result.status).toBe(200)
   })
+
+  it('protects /login-admin — bare startsWith must not match /login prefix', function () {
+    mockGetSessionCookie.mockReturnValue(null)
+    const result = middleware(makeRequest('/login-admin'))
+    expect(result.status).toBe(307)
+  })
+
+  it('protects /api/authorization — must not match /api/auth prefix', function () {
+    mockGetSessionCookie.mockReturnValue(null)
+    const result = middleware(makeRequest('/api/authorization'))
+    expect(result.status).toBe(307)
+  })
 })

@@ -5,7 +5,7 @@ const PUBLIC_PREFIXES = ['/login', '/api/auth']
 
 function isPublicPath(pathname: string): boolean {
   return PUBLIC_PREFIXES.some(function (prefix) {
-    return pathname.startsWith(prefix)
+    return pathname === prefix || pathname.startsWith(`${prefix}/`)
   })
 }
 

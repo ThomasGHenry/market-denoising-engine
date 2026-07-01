@@ -5,9 +5,10 @@ import { auth } from '../../lib/auth'
 
 async function signInWithMagicLink(formData: FormData): Promise<void> {
   'use server'
-  const email = formData.get('email') as string
+  const raw = formData.get('email')
+  if (typeof raw !== 'string' || !raw) return
   await auth.api.signInMagicLink({
-    body: { email, callbackURL: '/' },
+    body: { email: raw, callbackURL: '/' },
     headers: await headers(),
   })
 }
