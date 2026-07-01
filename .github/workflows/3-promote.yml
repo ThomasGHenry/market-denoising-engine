@@ -39,6 +39,13 @@ jobs:
     runs-on: ubuntu-24.04
     environment: production
     steps:
+      - name: Start production deployment record
+        id: deployment
+        uses: bobheadxi/deployments@v1
+        with:
+          step: start
+          token: ${{ secrets.GITHUB_TOKEN }}
+          env: production
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with: { node-version: '22', cache: 'npm' }
@@ -50,9 +57,11 @@ jobs:
       - name: Promote Vercel preview to production
         run: npx vercel promote ${{ secrets.VERCEL_PREVIEW_URL }} --token ${{ secrets.VERCEL_TOKEN }} --yes
       - name: Record production deployment
+        if: always()
         uses: bobheadxi/deployments@v1
         with:
           step: finish
           token: ${{ secrets.GITHUB_TOKEN }}
           env: production
           status: ${{ job.status }}
+          deployment_id: ${{ steps.deployment.outputs.deployment_id }}

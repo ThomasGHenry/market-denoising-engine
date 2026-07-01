@@ -88,7 +88,7 @@ resource "vercel_project_environment_variables" "mde" {
       sensitive = true
     },
     {
-      key       = "AUTH_URL"
+      key       = "BETTER_AUTH_URL"
       value     = "https://market-denoising-engine-thomas-g-henry-llc.vercel.app"
       target    = ["production"]
       sensitive = false
